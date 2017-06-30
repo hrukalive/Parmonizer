@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
+ * Implemented the concept of a chord, with the functionality
+ * to generate all possible configurations under certain restraints.
+ * 
  * Created by NyLP on 6/12/17.
  */
 
@@ -142,6 +145,21 @@ public class Chord
             }
             this.bass = Note.n(root);
         }
+        
+        public Builder(Chord chord)
+        {
+            this.noteSet.addAll(chord.noteSet);
+            for (int i = 0; i < chord.tendencyIntv.size(); i++)
+            {
+                tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
+                tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
+            }
+            this.bass = Note.n(chord.bass);
+            this.inversion = chord.inversion;
+            this.voices = chord.voices;
+            this.lo = chord.lo;
+            this.hi = chord.hi;
+        }
 
         public Builder inversion(int inv)
         {
@@ -205,13 +223,6 @@ public class Chord
         {
             ChordRealization temp = new ChordRealization();
             Note tempnote = Note.n(bassNote);
-            for (int i = 0; i < tendencyDir.get(0).size(); i++)
-            {
-                if (tendencyDir.get(0).get(i))
-                    tempnote.addTendency(tempnote.intervalAbove(tendencyIntv.get(0).get(i)));
-                else
-                    tempnote.addTendency(tempnote.intervalBelow(tendencyIntv.get(0).get(i)));
-            }
             temp.addVoice(tempnote);
             yieldHelper(1, temp, lo, hi, voices);
         }

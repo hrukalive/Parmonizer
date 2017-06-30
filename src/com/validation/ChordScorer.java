@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
+ * Scorer to evaluate the 'quality' of a chord configuration.
+ * 
  * Created by NyLP on 6/16/17.
  */
 

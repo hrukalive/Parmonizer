@@ -3,10 +3,13 @@ package com.validation;
 import com.base.Chord;
 import com.base.Note;
 import com.base.NoteCluster;
+import com.common.Interval;
 
 import java.util.ArrayList;
 
 /**
+ * Scorer to evaluate the chord to chord transition.
+ * 
  * Created by NyLP on 6/20/17.
  */
 
@@ -19,6 +22,25 @@ public class VoiceLeadingScorer
         int accum = 0;
         for (int i = 0; i < nc1n.size(); i++)
             accum += 50 * Math.abs(nc1n.get(i).dist(nc2n.get(i)));
+
+        for (int i = 0; i < nc1n.size() - 1; i++)
+        {
+            for (int j = i + 1; j < nc1n.size(); j++)
+            {
+                if (nc1n.get(i).compareTo(nc2n.get(i)) < 0 && nc1n.get(j).compareTo(nc2n.get(j)) > 0 && Math.abs(nc1n.get(j).dist(nc2n.get(j))) > Interval.M2.semitones())
+                {
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P1))
+                        accum += 2000;
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P4))
+                        accum += 2000;
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P5))
+                        accum += 2000;
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P8))
+                        accum += 2000;
+                }
+            }
+        }
+        
         return accum;
     }
 }

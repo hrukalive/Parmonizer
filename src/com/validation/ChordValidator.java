@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
+ * Validator that implements the rules when voicing a chord.
+ * 
  * Created by NyLP on 6/16/17.
  */
 public class ChordValidator

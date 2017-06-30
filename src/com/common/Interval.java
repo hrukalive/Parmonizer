@@ -1,6 +1,9 @@
 package com.common;
 
 /**
+ * Concept of Interval. Providing functions to check the properties
+ * and to transform the interval.
+ * 
  * Created by NyLP on 6/15/17.
  */
 

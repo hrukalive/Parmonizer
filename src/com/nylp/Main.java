@@ -20,7 +20,7 @@ public class Main {
     public static void main(String[] args)
     {
         Chord tonic_triad = new Chord.Builder(Note.n("C"), ChordStructure.M.ctor()).build();
-        ChordValidator tonic_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
+        ChordValidator tonic_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, true});
         ChordScorer tonic_triad_cs = new ChordScorer(new int[]{50, 300, 200}, new int[] {0, 0, 500}, new int[]{100, 200, 300});
         tonic_triad.applyValidation(tonic_triad_cv);
         tonic_triad.applyScorer(tonic_triad_cs);
@@ -121,18 +121,23 @@ public class Main {
         System.out.println(submed_triad.getRealizations().size() + " submed chords generated");
 
         Progression progression = new Progression();
-//        progression.addHarmony(new Progression.Harmony(tonic_triad, tonic_triad_cv, tonic_triad_cs));
-//        progression.addHarmony(new Progression.Harmony(pre_triad, pre_triad_cv, pre_triad_cs));
-//        progression.addHarmony(new Progression.Harmony(dom65, dom7_cv, dom7_cs));
-//        progression.addHarmony(new Progression.Harmony(submed_triad, submed_triad_cv, submed_triad_cs));
-//        progression.addHarmony(new Progression.Harmony(pre_triad, pre_triad_cv, pre_triad_cs));
-//        progression.addHarmony(new Progression.Harmony(tonic64, tonic64_cv, tonic64_cs));
-//        progression.addHarmony(new Progression.Harmony(dom7, dom7_cv, dom7_cs));
-//        progression.addHarmony(new Progression.Harmony(tonic_triad, tonic_triad_cv, tonic_triad_cs));
-        progression.addHarmony(new Progression.Harmony(tonic9, tonic9_cv, tonic9_cs));
-        progression.addHarmony(new Progression.Harmony(predom11, predom11_cv, predom11_cs));
-        progression.addHarmony(new Progression.Harmony(dom9, dom9_cv, dom9_cs));
-        progression.addHarmony(new Progression.Harmony(tonic6, tonic6_cv, tonic6_cs));
+        progression.addHarmony(new Progression.Harmony(tonic_triad, tonic_triad_cv, tonic_triad_cs));
+        progression.addHarmony(new Progression.Harmony(pre_triad, pre_triad_cv, pre_triad_cs));
+        progression.addHarmony(new Progression.Harmony(dom7, dom7_cv, dom7_cs));
+        progression.addHarmony(new Progression.Harmony(submed_triad, submed_triad_cv, submed_triad_cs));
+        progression.addHarmony(new Progression.Harmony(pre_triad, pre_triad_cv, pre_triad_cs));
+        progression.addHarmony(new Progression.Harmony(tonic64, tonic64_cv, tonic64_cs));
+        progression.addHarmony(new Progression.Harmony(dom7, dom7_cv, dom7_cs));
+        progression.addHarmony(new Progression.Harmony(tonic_triad, tonic_triad_cv, tonic_triad_cs));
+//        progression.addHarmony(new Progression.Harmony(tonic9, tonic9_cv, tonic9_cs));
+//        progression.addHarmony(new Progression.Harmony(predom11, predom11_cv, predom11_cs));
+//        progression.addHarmony(new Progression.Harmony(dom9, dom9_cv, dom9_cs));
+//        progression.addHarmony(new Progression.Harmony(tonic6, tonic6_cv, tonic6_cs));
+        
+        progression.insist(5, 4, Note.n("F"));
+        progression.insist(6, 4, Note.n("E"));
+        progression.insist(7, 4, Note.n("D"));
+        progression.insist(8, 4, Note.n("C"));
         progression.yield();
         System.out.println(progression.getPieces().size() + " realizations generated");
         for (int i = 0; i < 4; i++)

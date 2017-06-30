@@ -7,6 +7,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Implemented the concept of a note.
+ * Captured the difference of enharmonic notes. Providing functions
+ * to transform and compare notes.
+ * 
  * Created by NyLP on 6/12/17.
  */
 
@@ -22,7 +26,7 @@ public class Note implements Comparable<Note>
         this.noteCode = note.noteCode;
         this.octave = note.octave;
         this.alteration = note.alteration;
-        this.tendency = note.tendency;
+        this.tendency = new ArrayList<>(note.tendency);
     }
     private Note(int noteCode, int octave, int alteration)
     {
@@ -193,7 +197,7 @@ public class Note implements Comparable<Note>
         case 1 : ret += "#";  break;
         case 2 : ret += "x";  break;
         }
-        return ret + (includeOct ? octave : "");
+        return ret + (includeOct ? octave : "");// + (tendency.isEmpty() ? "" : tendency.toString());
     }
 
     @Override public int hashCode()

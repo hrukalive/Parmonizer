@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * Collection of chords so that under certain restraints, progression
+ * can be realized.
+ * 
  * Created by NyLP on 6/20/17.
  */
 
@@ -77,7 +80,7 @@ public class Progression
                 }
                 try
                 {
-                    Thread.sleep(600);
+                    Thread.sleep(1500);
                 }
                 catch (InterruptedException e)
                 {
@@ -128,16 +131,76 @@ public class Progression
 //            this(chord, cv, cs, null, null);
 //        }
     }
+    private static class Insist
+    {
+        private int voice;
+        private Note note;
+        public Insist(int voice, Note note)
+        {
+            this.voice = voice;
+            this.note = note;
+        }
+
+        public int getVoice()
+        {
+            return voice;
+        }
+
+        public Note getNote()
+        {
+            return note;
+        }
+
+        public void setNote(Note note)
+        {
+            this.note = note;
+        }
+    }
 
     private ArrayList<Harmony> progression = new ArrayList<>();
+    private ArrayList<ArrayList<Insist>> insist = new ArrayList<>();
     private ArrayList<VoiceLeading> collection;
 
-    public void addHarmony(Harmony harmony) { progression.add(harmony); }
+    public void addHarmony(Harmony harmony) { progression.add(harmony); insist.add(new ArrayList<Insist>()); }
+    public void insist (int chord, int voice, Note note)
+    {
+        chord--;
+        voice--;
+        
+        ArrayList<Insist> insistlist = insist.get(chord);
+        for (Insist i : insistlist)
+        {
+            if (i.getVoice() == voice)
+            {
+                i.setNote(note);
+                return;
+            }
+        }
+        
+        insistlist.add(new Insist(voice, note));
+    }
+    
+    private boolean checkInsist(NoteCluster nc, int num)
+    {
+        ArrayList<Insist> insistlist = insist.get(num);
+        if (!insistlist.isEmpty())
+        {
+            for (Insist ins : insistlist)
+            {
+                if (!nc.getNotes().get(ins.getVoice()).isEnharmonicNoClass(ins.getNote()))
+                    return false;
+            }
+        }
+        return true;
+    }
+    
     public void yield()
     {
         collection = new ArrayList<>();
         for (Chord.ChordRealization cr : progression.get(0).chord.getRealizations().getRealizations())
         {
+            if (!checkInsist(cr, 0))
+                continue;
             VoiceLeading vl = new VoiceLeading();
             vl.addChord(cr);
             vl.setLoss(vl.getLoss() + cr.getLoss());
@@ -157,6 +220,8 @@ public class Progression
             Chord.ChordRealizationCollection crc = harmony.chord.getRealizations();
             for (Chord.ChordRealization cr : crc.getRealizations())
             {
+                if (!checkInsist(cr, num))
+                    continue;
                 if (VoiceLeadingValidator.validate(vl.lastChord(), cr))
                 {
                     VoiceLeading vln = vl.addChordNew(cr);

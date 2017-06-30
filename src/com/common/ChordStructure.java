@@ -1,6 +1,8 @@
 package com.common;
 
 /**
+ * Enumerations of possible chord structures.
+ * 
  * Created by NyLP on 6/15/17.
  */
 

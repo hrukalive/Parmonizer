@@ -3,6 +3,8 @@ package com.base;
 import java.util.ArrayList;
 
 /**
+ * Broader concept than a chord.
+ * 
  * Created by NyLP on 6/20/17.
  */
 
