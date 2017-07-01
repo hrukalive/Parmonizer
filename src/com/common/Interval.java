@@ -7,7 +7,7 @@ package com.common;
  * Created by NyLP on 6/15/17.
  */
 
-public class Interval
+public final class Interval
 {
     private enum Type
     { Dim, Min, Maj, Aug, Per }
@@ -47,25 +47,27 @@ public class Interval
 
     private final int deg;
     private final int dist;
-    private Type type;
-    public Interval(int deg, int dist)
+    private final Type type;
+    
+    private Interval(int deg, int dist, Type type) { this.deg = deg; this.dist = dist; this.type = type; }
+    
+    public static Interval build(int deg, int dist)
     {
-        this.deg = deg;
-        this.dist = dist;
+        Type type = Type.Per;
         boolean flag = false;
         for (Interval intv: inventory)
         {
             if (intv.deg == deg && intv.dist == dist)
             {
-                this.type = intv.type;
+                type = intv.type;
                 flag = true;
                 break;
             }
         }
         if (!flag)
             throw new IllegalArgumentException("Cannot determine specific type.");
+        return new Interval(deg, dist, type);
     }
-    Interval(int deg, int dist, Type type) { this.deg = deg; this.dist = dist; this.type = type; }
 
     public int semitones()
     {
@@ -76,8 +78,12 @@ public class Interval
     public boolean isMinor() { return type.equals(Type.Min); }
     public boolean isMajor() { return type.equals(Type.Maj); }
     public boolean isAugmented() { return type.equals(Type.Aug); }
+    
     public Interval invert()
     {
+        if (deg > 8)
+            throw new IllegalArgumentException("Compound interval inversion is not supported.");
+        
         if (type == Type.Per)
             return new Interval(9 - deg, 12 - dist, Type.Per);
         if (type == Type.Min)

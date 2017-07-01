@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
  * Created by NyLP on 6/12/17.
  */
 
-public class Note implements Comparable<Note>
+public final class Note implements Comparable<Note>
 {
-    private int noteCode;
-    private int octave;
-    private int alteration;
-    private ArrayList<Note> tendency;
+    private final int noteCode;
+    private final int octave;
+    private final int alteration;
+    private final ArrayList<Note> tendency;
 
     private Note(Note note)
     {
@@ -37,9 +37,15 @@ public class Note implements Comparable<Note>
     }
 
     public void addTendency(Note note) { tendency.add(note); }
+    
     public ArrayList<Note> getTendencies() { return tendency; }
 
-    public static Note n(String noteName)
+    public static Note build(Note note)
+    {
+        return new Note(note);
+    }
+    
+    public static Note build(String noteName)
     {
         int code = -1;
         int alt = 0;
@@ -71,61 +77,66 @@ public class Note implements Comparable<Note>
 
         return new Note(code, oct, alt);
     }
+    
     public int dist(Note note) { return note.getCode() - this.getCode(); }
+    
+    private static int dist(int this_noteCode, int this_octave, int this_alteration, int that_noteCode, int that_octave, int that_alteration)
+    { return getCode(that_noteCode, that_octave, that_alteration) - getCode(this_noteCode, this_octave, this_alteration); }
+    
     public int distNoAlt(Note note)
     {
-        Note temp = Note.n(note);
-        temp.alteration = 0;
-        return dist(temp);
+        return dist(note) - note.alteration;
     }
+    
     public Interval interval(Note note)
     {
         if (compareTo(note) > 0)
             return note.interval(this).invert();
-        Note cthis = new Note(this);
-        Note cthat = new Note(note);
-        cthis.octave = 0;
-        while (cthis.dist(cthat) > 12)
-            cthat.octave--;
-        int diff = cthat.noteCode - cthis.noteCode;
-        return new Interval((diff <= 0 ? (diff + (cthat.octave - cthis.octave) * 7) : diff) + 1, cthis.dist(cthat));
+        int that_octave = note.octave;
+        while (dist(noteCode, 0, alteration, note.noteCode, that_octave, note.alteration) > 12)
+            that_octave--;
+        int diff = note.noteCode - this.noteCode;
+        return Interval.build((diff <= 0 ? (diff + that_octave * 7) : diff) + 1, dist(noteCode, 0, alteration, note.noteCode, that_octave, note.alteration));
     }
-
-    public static Note n(Note note)
-    {
-        return new Note(note);
-    }
-
+    
     public Note intervalAbove(Interval intv)
     {
-        Note temp = new Note(this);
-        temp.noteCode += intv.degree();
-        temp.octave += temp.noteCode / 7;
-        temp.noteCode %= 7;
-        temp.alteration = intv.semitones() - this.distNoAlt(temp);
-        return temp;
+        int temp_noteCode = noteCode + intv.degree();
+        int temp_octave = octave + temp_noteCode / 7;
+        temp_noteCode %= 7;
+        int temp_alteration = intv.semitones() - (getCode(temp_noteCode, temp_octave, 0) - this.getCode());
+        return new Note(temp_noteCode, temp_octave, temp_alteration);
     }
+    
     public Note intervalBelow(Interval intv)
     {
-        Note temp = intervalAbove(intv.invert());
-        temp.octave--;
-        return temp;
+        Interval intv_inv = intv.invert();
+        int temp_noteCode = noteCode + intv_inv.degree();
+        int temp_octave = octave + temp_noteCode / 7;
+        temp_noteCode %= 7;
+        int temp_alteration = intv_inv.semitones() - (getCode(temp_noteCode, temp_octave, 0) - this.getCode());
+        return new Note(temp_noteCode, temp_octave - 1, temp_alteration);
     }
 
     public ArrayList<Note> allInRange(Note lo, Note hi)
     {
         ArrayList<Note> ret = new ArrayList<>();
-        Note temp = new Note(this);
-        while (temp.compareTo(lo) < 0) temp.octave++;
-        while (temp.compareTo(hi) < 0)
+        int temp_octave = 0;
+        while (lo.compareTo(noteCode, temp_octave, alteration) > 0) temp_octave++;
+        while (hi.compareTo(noteCode, temp_octave, alteration) >= 0)
         {
-            ret.add(new Note(temp));
-            temp.octave++;
+            ret.add(new Note(noteCode, temp_octave, alteration));
+            temp_octave++;
         }
         return ret;
     }
 
     public int getCode()
+    {
+        return getCode(noteCode, octave, alteration);
+    }
+    
+    private static int getCode(int noteCode, int octave, int alteration)
     {
         int ret = 0;
         switch (noteCode)
@@ -153,22 +164,40 @@ public class Note implements Comparable<Note>
         }
         return false;
     }
+    
     public boolean isEnharmonic(Note o)
     {
         return this.getCode() == o.getCode();
     }
+    
     public boolean isEnharmonicNoClass(Note o) { return (this.getCode() % 12) == (o.getCode() % 12); }
+    
     public boolean isAugmented(Note note)
     {
         if (compareTo(note) > 0)
             return note.isAugmented(this);
         return interval(note).isAugmented();
     }
+    
+    public boolean isMajor(Note note)
+    {
+        if (compareTo(note) > 0)
+            return note.isMajor(this);
+        return interval(note).isMajor();
+    }
+    
     public boolean isDiminished(Note note)
     {
         if (compareTo(note) > 0)
-            return note.isAugmented(this);
+            return note.isDiminished(this);
         return interval(note).isDiminished();
+    }
+    
+    public boolean isMinor(Note note)
+    {
+        if (compareTo(note) > 0)
+            return note.isMinor(this);
+        return interval(note).isMinor();
     }
 
     @Override public String toString()
@@ -197,12 +226,12 @@ public class Note implements Comparable<Note>
         case 1 : ret += "#";  break;
         case 2 : ret += "x";  break;
         }
-        return ret + (includeOct ? octave : "");// + (tendency.isEmpty() ? "" : tendency.toString());
+        return ret + (includeOct ? octave : "");
     }
 
     @Override public int hashCode()
     {
-        return Integer.hashCode(noteCode);
+        return Integer.hashCode(getCode());
     }
 
     @Override public int compareTo(Note o)
@@ -210,6 +239,12 @@ public class Note implements Comparable<Note>
         if (o == null) throw new NullPointerException("Null Note to compare");
         if (getCode() < o.getCode()) return -1;
         if (getCode() > o.getCode()) return 1;
+        return 0;
+    }
+    private int compareTo(int noteCode, int octave, int alteration)
+    {
+        if (getCode() < getCode(noteCode, octave, alteration)) return -1;
+        if (getCode() > getCode(noteCode, octave, alteration)) return 1;
         return 0;
     }
 }

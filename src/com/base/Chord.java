@@ -1,7 +1,6 @@
 package com.base;
 
 import com.common.Interval;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.validation.ChordScorer;
 import com.validation.ChordValidator;
 
@@ -27,7 +26,7 @@ public class Chord
         @Override public ChordRealization addVoiceNew(Note note)
         {
             ChordRealization ret = new ChordRealization(this);
-            ret.addVoice(Note.n(note));
+            ret.addVoice(Note.build(note));
             return ret;
         }
 
@@ -128,12 +127,12 @@ public class Chord
 
         private int inversion = 0;
         private int voices = 4;
-        private Note[] lo = new Note[]{Note.n("E2"), Note.n("B2"), Note.n("F3"), Note.n("C4")};
-        private Note[] hi = new Note[]{Note.n("E4"), Note.n("A4"), Note.n("E5"), Note.n("C6")};
+        private Note[] lo = new Note[]{Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4")};
+        private Note[] hi = new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("C6")};
 
         public Builder(Note root, Interval intervals[])
         {
-            this.noteSet.add(Note.n(root));
+            this.noteSet.add(Note.build(root));
             tendencyIntv.add(new ArrayList<Interval>());
             tendencyDir.add(new ArrayList<Boolean>());
             for (int i = 0; i < intervals.length; i++)
@@ -143,7 +142,7 @@ public class Chord
                 tendencyIntv.add(new ArrayList<Interval>());
                 tendencyDir.add(new ArrayList<Boolean>());
             }
-            this.bass = Note.n(root);
+            this.bass = Note.build(root);
         }
         
         public Builder(Chord chord)
@@ -154,7 +153,7 @@ public class Chord
                 tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
                 tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
             }
-            this.bass = Note.n(chord.bass);
+            this.bass = Note.build(chord.bass);
             this.inversion = chord.inversion;
             this.voices = chord.voices;
             this.lo = chord.lo;
@@ -164,7 +163,7 @@ public class Chord
         public Builder inversion(int inv)
         {
             this.inversion = inv;
-            this.bass = Note.n(noteSet.get(inv));
+            this.bass = Note.build(noteSet.get(inv));
             return this;
         }
         public Builder voices(int voices)
@@ -222,7 +221,7 @@ public class Chord
         for (Note bassNote : bass.allInRange(lo[0], hi[0]))
         {
             ChordRealization temp = new ChordRealization();
-            Note tempnote = Note.n(bassNote);
+            Note tempnote = Note.build(bassNote);
             temp.addVoice(tempnote);
             yieldHelper(1, temp, lo, hi, voices);
         }

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class NoteCluster
 {
-    protected ArrayList<Note> cluster;
+    protected final ArrayList<Note> cluster;
 
     public NoteCluster() { cluster = new ArrayList<>(); }
     public NoteCluster(NoteCluster cluster) { this.cluster = new ArrayList<>(cluster.getNotes()); }
