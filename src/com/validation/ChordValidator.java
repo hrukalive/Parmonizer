@@ -14,17 +14,18 @@ import java.util.Iterator;
  */
 public class ChordValidator
 {
-    // Bug exists for Cb Chord but not B Chord
-    public final boolean[] repeatability;
-    public final boolean[] omitability;
+    private final boolean[] repeatability;
+    private final boolean[] omitability;
+    
     public ChordValidator(boolean[] repeatability, boolean[] omitability)
     {
         this.repeatability = repeatability;
         this.omitability = omitability;
     }
 
-    private static boolean validate(ArrayList<Note> chordNotes, Chord parent, boolean[] repeatability, boolean[] omitability)
+    public boolean validate(Chord.ChordRealization chordRealization, Chord parent)
     {
+        ArrayList<Note> chordNotes = chordRealization.getNotes();
         for (int i = 1; i < chordNotes.size() - 1; i++)
         {
             if (chordNotes.get(i + 1).getCode() - chordNotes.get(i).getCode() > 12)
@@ -68,15 +69,5 @@ public class ChordValidator
                 return false;
 
         return true;
-    }
-
-    public void validate(Chord chord)
-    {
-        Iterator it = chord.getRealizations().iterator();
-        while (it.hasNext())
-        {
-            if (!validate(((NoteCluster)it.next()).getNotes(), chord, repeatability, omitability))
-                it.remove();
-        }
     }
 }

@@ -69,8 +69,11 @@ public class Progression
                 e.printStackTrace();
                 System.exit(1);
             }
+//            for (Instrument inst : synth.getAvailableInstruments())
+//                System.out.println(inst.toString());
             MidiChannel[] channels = synth.getChannels();
             MidiChannel	channel = channels[0];
+            channel.programChange(48);
 
             for (NoteCluster nc : piece)
             {
@@ -88,6 +91,13 @@ public class Progression
                 channel.allNotesOff();
             }
             synth.close();
+            try
+            {
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+            }
         }
 
         @Override public int compareTo(VoiceLeading o)
@@ -115,22 +125,15 @@ public class Progression
         private Chord chord;
         private ChordValidator cv;
         private ChordScorer cs;
-//        private VoiceLeadingValidator vv;
-//        private VoiceLeadingScorer vs;
 
-        public Harmony(Chord chord, ChordValidator cv, ChordScorer cs) //, VoiceLeadingValidator vv, VoiceLeadingScorer vs)
+        public Harmony(Chord chord, ChordValidator cv, ChordScorer cs)
         {
             this.chord = chord;
             this.cv = cv;
             this.cs = cs;
-//            this.vv = vv;
-//            this.vs = vs;
         }
-//        public Harmony(Chord chord, ChordValidator cv, ChordScorer cs)
-//        {
-//            this(chord, cv, cs, null, null);
-//        }
     }
+    
     private static class Insist
     {
         private int voice;
@@ -162,25 +165,22 @@ public class Progression
     private ArrayList<VoiceLeading> collection;
 
     public void addHarmony(Harmony harmony) { progression.add(harmony); insist.add(new ArrayList<Insist>()); }
-    public void insist (int chord, int voice, Note note)
+    public void fixNoteClass(int chord, int voice, Note note)
     {
-        chord--;
-        voice--;
-        
-        ArrayList<Insist> insistlist = insist.get(chord);
+        ArrayList<Insist> insistlist = insist.get(chord - 1);
         for (Insist i : insistlist)
         {
-            if (i.getVoice() == voice)
+            if (i.getVoice() == voice - 1)
             {
                 i.setNote(note);
                 return;
             }
         }
         
-        insistlist.add(new Insist(voice, note));
+        insistlist.add(new Insist(voice - 1, note));
     }
     
-    private boolean checkInsist(NoteCluster nc, int num)
+    private boolean checkFixedNoteClass(NoteCluster nc, int num)
     {
         ArrayList<Insist> insistlist = insist.get(num);
         if (!insistlist.isEmpty())
@@ -197,9 +197,15 @@ public class Progression
     public void yield()
     {
         collection = new ArrayList<>();
-        for (Chord.ChordRealization cr : progression.get(0).chord.getRealizations().getRealizations())
+        Harmony harmony = progression.get(0);
+        harmony.chord.setValidator(harmony.cv);
+        harmony.chord.setScorer(harmony.cs);
+        harmony.chord.yield();
+        ArrayList<Chord.ChordRealization> crs = harmony.chord.getRealizations();
+        for (int i = 0; i < crs.size(); i++)
         {
-            if (!checkInsist(cr, 0))
+            Chord.ChordRealization cr = crs.get(i);
+            if (!checkFixedNoteClass(cr, 0))
                 continue;
             VoiceLeading vl = new VoiceLeading();
             vl.addChord(cr);
@@ -217,10 +223,14 @@ public class Progression
         else if (num < progression.size())
         {
             Harmony harmony = progression.get(num);
-            Chord.ChordRealizationCollection crc = harmony.chord.getRealizations();
-            for (Chord.ChordRealization cr : crc.getRealizations())
+            harmony.chord.setValidator(harmony.cv);
+            harmony.chord.setScorer(harmony.cs);
+            harmony.chord.yield();
+            ArrayList<Chord.ChordRealization> crs = harmony.chord.getRealizations();
+            for (int i = 0; i < crs.size(); i++)
             {
-                if (!checkInsist(cr, num))
+                Chord.ChordRealization cr = crs.get(i);
+                if (!checkFixedNoteClass(cr, num))
                     continue;
                 if (VoiceLeadingValidator.validate(vl.lastChord(), cr))
                 {

@@ -20,6 +20,8 @@ public final class Note implements Comparable<Note>
     private final int octave;
     private final int alteration;
     private final ArrayList<Note> tendency;
+    public enum Dir
+    { Above, Below }
 
     private Note(Note note)
     {

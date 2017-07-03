@@ -49,98 +49,54 @@ public class Chord
         }
     }
 
-    public class ChordRealizationCollection
-    {
-        private ArrayList<ChordRealization> realizations = new ArrayList<>();
-        private boolean validated = false, scored = false;
-        private boolean sorted = false;
-
-        public void add(ChordRealization r) { realizations.add(r); }
-
-        public ArrayList<ChordRealization> getRealizations()
-        {
-            if (!validated || !scored)
-                throw new InternalError("Chord Realizations not prepared.");
-            if (!sorted)
-            {
-                Collections.sort(realizations);
-                sorted = true;
-            }
-            return realizations;
-        }
-
-        public boolean isValidated()
-        {
-            return validated;
-        }
-
-        public boolean isScored()
-        {
-            return scored;
-        }
-
-        public boolean isSorted()
-        {
-            return sorted;
-        }
-
-        public void setValidated()
-        {
-            this.validated = true;
-        }
-
-        public void setScored()
-        {
-            this.scored = true;
-        }
-
-        public void resetFlag()
-        {
-            sorted = false;
-            validated = false;
-            scored = false;
-        }
-
-        public int size() { return realizations.size(); }
-
-        public Iterator<ChordRealization> iterator() { return realizations.iterator(); }
-    }
-
     private ArrayList<Note> noteSet = new ArrayList<Note>();
     private ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
-    private ArrayList<ArrayList<Boolean>> tendencyDir = new ArrayList<>();
+    private ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
+    private ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
+    private ArrayList<ArrayList<Note.Dir>> altTendencyDir = new ArrayList<>();
+    private ArrayList<ArrayList<Interval>> bonusIntv = new ArrayList<>();
+    private ArrayList<ArrayList<Note.Dir>> bonusDir = new ArrayList<>();
+    private ArrayList<ArrayList<Integer>> bonusValue = new ArrayList<>();
     private Note bass;
 
     private int inversion;
     private int voices;
     private Note[] lo;
     private Note[] hi;
+    private ChordValidator validator;
+    private boolean validatorChanged = true;
+    private ChordScorer scorer;
 
-    private ChordRealizationCollection collection = new ChordRealizationCollection();
+    private ArrayList<ChordRealization> realizations = new ArrayList<>();
 
     public static class Builder
     {
         private final ArrayList<Note> noteSet = new ArrayList<>();
         private final ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
-        private final ArrayList<ArrayList<Boolean>> tendencyDir = new ArrayList<>();
+        private final ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
+        private final ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
+        private final ArrayList<ArrayList<Note.Dir>> altTendencyDir = new ArrayList<>();
+        private final ArrayList<ArrayList<Interval>> bonusIntv = new ArrayList<>();
+        private final ArrayList<ArrayList<Note.Dir>> bonusDir = new ArrayList<>();
+        private final ArrayList<ArrayList<Integer>> bonusValue = new ArrayList<>();
         private Note bass;
 
         private int inversion = 0;
         private int voices = 4;
-        private Note[] lo = new Note[]{Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4")};
-        private Note[] hi = new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("C6")};
+        private Note[] lo = new Note[] {Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4")};
+        private Note[] hi = new Note[] {Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("C6")};
 
         public Builder(Note root, Interval intervals[])
         {
             this.noteSet.add(Note.build(root));
-            tendencyIntv.add(new ArrayList<Interval>());
-            tendencyDir.add(new ArrayList<Boolean>());
+            tendencyIntv.add(new ArrayList<>());
+            tendencyDir.add(new ArrayList<>());
             for (int i = 0; i < intervals.length; i++)
             {
                 Note temp = root.intervalAbove(intervals[i]);
                 this.noteSet.add(temp);
-                tendencyIntv.add(new ArrayList<Interval>());
-                tendencyDir.add(new ArrayList<Boolean>());
+                tendencyIntv.add(new ArrayList<>());
+                tendencyDir.add(new ArrayList<>());
             }
             this.bass = Note.build(root);
         }
@@ -185,12 +141,29 @@ public class Chord
             this.hi = notes;
             return this;
         }
-        public Builder tendency(int voice, boolean above, Interval intv)
+        public Builder tendency(int voice, Note.Dir dir, Interval intv)
         {
             if (voice >= voices)
                 throw new IllegalArgumentException("Voice required does not exist.");
             tendencyIntv.get(voice).add(intv);
-            tendencyDir.get(voice).add(above);
+            tendencyDir.get(voice).add(dir);
+            return this;
+        }
+        public Builder altTendency(int voice, Note.Dir dir, Interval intv)
+        {
+            if (voice >= voices)
+                throw new IllegalArgumentException("Voice required does not exist.");
+            altTendencyIntv.get(voice).add(intv);
+            altTendencyDir.get(voice).add(dir);
+            return this;
+        }
+        public Builder bonus(int voice, Note.Dir dir, Interval intv, int bonus)
+        {
+            if (voice >= voices)
+                throw new IllegalArgumentException("Voice required does not exist.");
+            bonusIntv.get(voice).add(intv);
+            bonusDir.get(voice).add(dir);
+            bonusValue.get(voice).add(bonus);
             return this;
         }
         public Chord build()
@@ -211,13 +184,20 @@ public class Chord
 
         tendencyDir = builder.tendencyDir;
         tendencyIntv = builder.tendencyIntv;
-
-        yield();
+        altTendencyDir = builder.altTendencyDir;
+        altTendencyIntv = builder.altTendencyIntv;
+        bonusDir = builder.bonusDir;
+        bonusIntv = builder.bonusIntv;
+        bonusValue = builder.bonusValue;
     }
 
     public void yield()
     {
-        collection = new ChordRealizationCollection();
+        if (!validatorChanged)
+            return;
+        
+        validatorChanged = false;
+        realizations.clear();
         for (Note bassNote : bass.allInRange(lo[0], hi[0]))
         {
             ChordRealization temp = new ChordRealization();
@@ -230,7 +210,11 @@ public class Chord
     {
         if (num == voices)
         {
-            collection.add(accum);
+            if (validator.validate(accum, this))
+            {
+                accum.setLoss(scorer.score(accum, this));
+                realizations.add(accum);
+            }
         }
         else if (num < voices)
         {
@@ -241,7 +225,7 @@ public class Chord
                 {
                     for (int j = 0; j < tendencyDir.get(i).size(); j++)
                     {
-                        if (tendencyDir.get(i).get(j))
+                        if (tendencyDir.get(i).get(j) == Note.Dir.Above)
                             note.addTendency(note.intervalAbove(tendencyIntv.get(i).get(j)));
                         else
                             note.addTendency(note.intervalBelow(tendencyIntv.get(i).get(j)));
@@ -253,24 +237,21 @@ public class Chord
         }
     }
 
-    public void applyValidation(ChordValidator validator)
+    public void setValidator(ChordValidator validator)
     {
-        if (collection.isValidated())
-            yield();
-
-        validator.validate(this);
-
-        collection.setValidated();
+        this.validator = validator;
+        validatorChanged = true;
     }
 
-    public void applyScorer(ChordScorer scorer)
+    public void setScorer(ChordScorer scorer)
     {
-        if (!collection.isValidated())
-            throw new InternalError("Not validated before scoring.");
-
-        scorer.score(this);
-
-        collection.setScored();
+        this.scorer = scorer;
+        
+        if (!realizations.isEmpty())
+        {
+            for (ChordRealization cr : realizations)
+                cr.setLoss(scorer.score(cr, this));
+        }
     }
 
     public ArrayList getNoteSet()
@@ -278,9 +259,10 @@ public class Chord
         return noteSet;
     }
 
-    public ChordRealizationCollection getRealizations()
+    public ArrayList<ChordRealization> getRealizations()
     {
-        return collection;
+        Collections.sort(realizations);
+        return realizations;
     }
 
     public Note getBass()

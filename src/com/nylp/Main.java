@@ -12,12 +12,9 @@ public class Main {
 
     public static void main(String[] args)
     {
-        Chord tonic_triad = new Chord.Builder(Note.build("C"), ChordStructure.M.ctor()).build();
+        Chord tonic_triad = new Chord.Builder(Note.build("C"), ChordStructure.m.ctor()).build();
         ChordValidator tonic_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, true});
         ChordScorer tonic_triad_cs = new ChordScorer(new int[]{50, 300, 200}, new int[] {0, 0, 500}, new int[]{100, 200, 300});
-        tonic_triad.applyValidation(tonic_triad_cv);
-        tonic_triad.applyScorer(tonic_triad_cs);
-        System.out.println(tonic_triad.getRealizations().size() + " tonic chords generated");
         
         Chord tonic9 = new Chord.Builder(Note.build("C"), new Interval[] {Interval.M3, Interval.P5, Interval.M7, Interval.M9})
                 .voices(5)
@@ -25,9 +22,6 @@ public class Main {
                 .high(new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("A5"), Note.build("C6")}).build();
         ChordValidator tonic9_cv = new ChordValidator(new boolean[]{true, true, true, false, false}, new boolean[]{false, false, true, true, false});
         ChordScorer tonic9_cs = new ChordScorer(new int[]{50, 300, 200, 0, 0}, new int[] {0, 0, 300, 500, 0}, new int[]{100, 200, 300, 400});
-        tonic9.applyValidation(tonic9_cv);
-        tonic9.applyScorer(tonic9_cs);
-        System.out.println(tonic9.getRealizations().size() + " tonic9 chords generated");
         
         Chord tonic6 = new Chord.Builder(Note.build("C"), new Interval[] {Interval.M3, Interval.P5, Interval.M6})
                 .voices(5)
@@ -35,25 +29,18 @@ public class Main {
                 .high(new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("A5"), Note.build("A5")}).build();
         ChordValidator tonic6_cv = new ChordValidator(new boolean[]{true, true, true, false}, new boolean[]{false, false, true, false});
         ChordScorer tonic6_cs = new ChordScorer(new int[]{50, 300, 200, 0}, new int[] {0, 0, 300, 0}, new int[]{100, 200, 300, 400});
-        tonic6.applyValidation(tonic6_cv);
-        tonic6.applyScorer(tonic6_cs);
-        System.out.println(tonic6.getRealizations().size() + " tonic6 chords generated");
 
-        Chord tonic64 = new Chord.Builder(Note.build("C"), ChordStructure.M.ctor()).inversion(2)
-                .tendency(0, false, Interval.m2)
-                .tendency(1, false, Interval.M2).build();
+        Chord tonic64 = new Chord.Builder(Note.build("C"), ChordStructure.m.ctor()).inversion(2)
+                .tendency(0, Note.Dir.Below, Interval.m2)
+                .tendency(0, Note.Dir.Below, Interval.M2)
+                .tendency(1, Note.Dir.Below, Interval.m2)
+                .tendency(1, Note.Dir.Below, Interval.M2).build();
         ChordValidator tonic64_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
         ChordScorer tonic64_cs = new ChordScorer(new int[]{500, 300, 50}, new int[] {0, 0, 0}, new int[]{100, 200, 300});
-        tonic64.applyValidation(tonic64_cv);
-        tonic64.applyScorer(tonic64_cs);
-        System.out.println(tonic64.getRealizations().size() + " tonic64 chords generated");
         
         Chord predom7 = new Chord.Builder(Note.build("D"), ChordStructure.mm7.ctor()).build();
         ChordValidator predom7_cv = new ChordValidator(new boolean[]{true, true, true, false}, new boolean[]{false, false, false, false});
         ChordScorer predom7_cs = new ChordScorer(new int[]{100, 50, 500, 0}, new int[] {0, 0, 0, 0}, new int[]{100, 200, 300});
-        predom7.applyValidation(predom7_cv);
-        predom7.applyScorer(predom7_cs);
-        System.out.println(predom7.getRealizations().size() + " pre-dom7 chords generated");
 
         Chord predom11 = new Chord.Builder(Note.build("D"), new Interval[] {Interval.m3, Interval.P5, Interval.m7, Interval.P11})
                 .voices(5)
@@ -61,57 +48,39 @@ public class Main {
                 .high(new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("A5"), Note.build("A5")}).build();
         ChordValidator predom11_cv = new ChordValidator(new boolean[]{true, true, true, false, false}, new boolean[]{false, false, true, true, false});
         ChordScorer predom11_cs = new ChordScorer(new int[]{100, 50, 500, 0, 0}, new int[] {0, 0, 100, 300, 0}, new int[]{100, 200, 300, 400});
-        predom11.applyValidation(predom11_cv);
-        predom11.applyScorer(predom11_cs);
-        System.out.println(predom11.getRealizations().size() + " pre-dom11 chords generated");
         
-        Chord pre_triad = new Chord.Builder(Note.build("F"), ChordStructure.M.ctor()).build();
+        Chord pre_triad = new Chord.Builder(Note.build("F"), ChordStructure.m.ctor()).build();
         ChordValidator pre_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
         ChordScorer pre_triad_cs = new ChordScorer(new int[]{50, 100, 200}, new int[] {0, 0, 0}, new int[]{100, 200, 300});
-        pre_triad.applyValidation(pre_triad_cv);
-        pre_triad.applyScorer(pre_triad_cs);
-        System.out.println(pre_triad.getRealizations().size() + " pre chords generated");
 
         Chord dom7 = new Chord.Builder(Note.build("G"), ChordStructure.Mm7.ctor())
-                .tendency(1, true, Interval.m2)
-                .tendency(1, false, Interval.M3)
-                .tendency(3, false, Interval.m2)
-                .tendency(3, false, Interval.M2).build();
+                .tendency(1, Note.Dir.Above, Interval.m2)
+                .tendency(1, Note.Dir.Below, Interval.M3)
+                .tendency(3, Note.Dir.Below, Interval.m2)
+                .tendency(3, Note.Dir.Below, Interval.M2).build();
         ChordValidator dom7_cv = new ChordValidator(new boolean[]{true, false, true, false}, new boolean[]{false, false, true, false});
         ChordScorer dom7_cs = new ChordScorer(new int[]{50, 0, 300, 0}, new int[] {0, 0, 30, 0}, new int[]{500, 200, 300});
-        dom7.applyValidation(dom7_cv);
-        dom7.applyScorer(dom7_cs);
-        System.out.println(dom7.getRealizations().size() + " dom7 chords generated");
         
         Chord dom9 = new Chord.Builder(Note.build("G"), new Interval[] {Interval.M3, Interval.P5, Interval.m7, Interval.M9})
                 .voices(5)
                 .low(new Note[]{Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4"), Note.build("C4")})
                 .high(new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("A5"), Note.build("A5")})
-                .tendency(1, true, Interval.m2)
-                .tendency(1, false, Interval.M3)
-                .tendency(3, false, Interval.m2)
-                .tendency(3, false, Interval.M2).build();
+                .tendency(1, Note.Dir.Above, Interval.m2)
+                .tendency(1, Note.Dir.Below, Interval.M3)
+                .tendency(3, Note.Dir.Below, Interval.m2)
+                .tendency(3, Note.Dir.Below, Interval.M2).build();
         ChordValidator dom9_cv = new ChordValidator(new boolean[]{true, false, true, false, false}, new boolean[]{false, false, true, false, false});
         ChordScorer dom9_cs = new ChordScorer(new int[]{50, 0, 300, 0, 0}, new int[] {0, 0, 100, 0, 0}, new int[]{500, 200, 300, 400});
-        dom9.applyValidation(dom9_cv);
-        dom9.applyScorer(dom9_cs);
-        System.out.println(dom9.getRealizations().size() + " dom9 chords generated");
         
         Chord dom65 = new Chord.Builder(Note.build("G"), ChordStructure.Mm7.ctor()).inversion(1)
-                .tendency(1, true, Interval.m2)
-                .tendency(1, false, Interval.M3)
-                .tendency(3, false, Interval.m2)
-                .tendency(3, false, Interval.M2).build();
-        dom65.applyValidation(dom7_cv);
-        dom65.applyScorer(dom7_cs);
-        System.out.println(dom65.getRealizations().size() + " dom65 chords generated");
+                .tendency(1, Note.Dir.Above, Interval.m2)
+                .tendency(1, Note.Dir.Below, Interval.M3)
+                .tendency(3, Note.Dir.Below, Interval.m2)
+                .tendency(3, Note.Dir.Below, Interval.M2).build();
 
-        Chord submed_triad = new Chord.Builder(Note.build("A"), ChordStructure.m.ctor()).build();
+        Chord submed_triad = new Chord.Builder(Note.build("Ab"), ChordStructure.M.ctor()).build();
         ChordValidator submed_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
         ChordScorer submed_triad_cs = new ChordScorer(new int[]{100, 50, 500}, new int[] {0, 0, 500}, new int[]{100, 200, 300});
-        submed_triad.applyValidation(submed_triad_cv);
-        submed_triad.applyScorer(submed_triad_cs);
-        System.out.println(submed_triad.getRealizations().size() + " submed chords generated");
 
         Progression progression = new Progression();
         progression.addHarmony(new Progression.Harmony(tonic_triad, tonic_triad_cv, tonic_triad_cs));
@@ -127,10 +96,15 @@ public class Main {
 //        progression.addHarmony(new Progression.Harmony(dom9, dom9_cv, dom9_cs));
 //        progression.addHarmony(new Progression.Harmony(tonic6, tonic6_cv, tonic6_cs));
         
-        progression.insist(5, 4, Note.build("F"));
-        progression.insist(6, 4, Note.build("E"));
-        progression.insist(7, 4, Note.build("D"));
-        progression.insist(8, 4, Note.build("C"));
+        progression.fixNoteClass(1, 2, Note.build("C"));
+        progression.fixNoteClass(1, 3, Note.build("G"));
+        progression.fixNoteClass(1, 4, Note.build("Eb"));
+
+        progression.fixNoteClass(2, 4, Note.build("F"));
+        progression.fixNoteClass(5, 4, Note.build("F"));
+        progression.fixNoteClass(6, 4, Note.build("Eb"));
+        progression.fixNoteClass(7, 4, Note.build("D"));
+        progression.fixNoteClass(8, 4, Note.build("C"));
         progression.yield();
         System.out.println(progression.getPieces().size() + " realizations generated");
         for (int i = 0; i < 4; i++)

@@ -26,8 +26,9 @@ public class ChordScorer
         this.unisonPenalty = unisonPenalty;
     }
 
-    private int score(ArrayList<Note> chordNotes, Chord parent, int[] repeatPenalty, int[] omitPenalty, int[] unisonPenalty)
+    public int score(Chord.ChordRealization chordRealization, Chord parent)
     {
+        ArrayList<Note> chordNotes = chordRealization.getNotes();
         int loss = 0;
 
         ArrayList<Note> chord = parent.getNoteSet();
@@ -72,15 +73,5 @@ public class ChordScorer
         }
 
         return loss;
-    }
-
-    public void score(Chord chord)
-    {
-        Iterator it = chord.getRealizations().iterator();
-        while (it.hasNext())
-        {
-            Chord.ChordRealization realization = (Chord.ChordRealization)(it.next());
-            realization.setLoss(score(realization.getNotes(), chord, repeatPenalty, omitPenalty, unisonPenalty));
-        }
     }
 }
