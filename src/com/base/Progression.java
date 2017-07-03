@@ -11,6 +11,8 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Synthesizer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Collection of chords so that under certain restraints, progression
@@ -161,57 +163,51 @@ public class Progression
     }
 
     private ArrayList<Harmony> progression = new ArrayList<>();
-    private ArrayList<ArrayList<Insist>> insist = new ArrayList<>();
-    private ArrayList<VoiceLeading> collection;
+    private ArrayList<HashMap<Integer, Note>> fixedClass = new ArrayList<>();
+    private ArrayList<HashMap<Integer, Note>> insistList = new ArrayList<>();
+    private ArrayList<VoiceLeading> collection = new ArrayList<>();
 
-    public void addHarmony(Harmony harmony) { progression.add(harmony); insist.add(new ArrayList<Insist>()); }
+    public void addHarmony(Harmony harmony) { progression.add(harmony); fixedClass.add(new HashMap<>()); insistList.add(new HashMap<>()); }
     public void fixNoteClass(int chord, int voice, Note note)
     {
-        ArrayList<Insist> insistlist = insist.get(chord - 1);
-        for (Insist i : insistlist)
+        for (Note n : (ArrayList<Note>)progression.get(chord - 1).chord.getNoteSet())
         {
-            if (i.getVoice() == voice - 1)
+            if (n.isEnharmonicNoClass(note))
             {
-                i.setNote(note);
-                return;
+                HashMap<Integer, Note> fixedList = fixedClass.get(chord - 1);
+                if (fixedList.containsKey(voice))
+                    fixedList.replace(voice, note);
+                else
+                    fixedList.put(voice, note);
             }
         }
-        
-        insistlist.add(new Insist(voice - 1, note));
+    }
+    public void insist(int chord, int voice, Note note)
+    {
+        fixNoteClass(chord, voice, note);
+        HashMap<Integer, Note> lst = insistList.get(chord - 1);
+        if (lst.containsKey(voice))
+            lst.replace(voice, note);
+        else
+            lst.put(voice, note);
     }
     
     private boolean checkFixedNoteClass(NoteCluster nc, int num)
     {
-        ArrayList<Insist> insistlist = insist.get(num);
-        if (!insistlist.isEmpty())
+        HashMap<Integer, Note> fixedList = fixedClass.get(num);
+        ArrayList<Note> chordNotes = nc.getNotes();
+        for (Map.Entry<Integer, Note> entry : fixedList.entrySet())
         {
-            for (Insist ins : insistlist)
-            {
-                if (!nc.getNotes().get(ins.getVoice()).isEnharmonicNoClass(ins.getNote()))
-                    return false;
-            }
+            if (!chordNotes.get(entry.getKey() - 1).isEnharmonicNoClass(entry.getValue()))
+                return false;
         }
         return true;
     }
     
     public void yield()
     {
-        collection = new ArrayList<>();
-        Harmony harmony = progression.get(0);
-        harmony.chord.setValidator(harmony.cv);
-        harmony.chord.setScorer(harmony.cs);
-        harmony.chord.yield();
-        ArrayList<Chord.ChordRealization> crs = harmony.chord.getRealizations();
-        for (int i = 0; i < crs.size(); i++)
-        {
-            Chord.ChordRealization cr = crs.get(i);
-            if (!checkFixedNoteClass(cr, 0))
-                continue;
-            VoiceLeading vl = new VoiceLeading();
-            vl.addChord(cr);
-            vl.setLoss(vl.getLoss() + cr.getLoss());
-            yieldHelper(1, vl);
-        }
+        collection.clear();
+        yieldHelper(0, null);
         Collections.sort(collection);
     }
     private void yieldHelper(int num, VoiceLeading vl)
@@ -232,11 +228,24 @@ public class Progression
                 Chord.ChordRealization cr = crs.get(i);
                 if (!checkFixedNoteClass(cr, num))
                     continue;
-                if (VoiceLeadingValidator.validate(vl.lastChord(), cr))
+                for (Map.Entry<Integer, Note> entry : insistList.get(num).entrySet())
+                    cr.replace(entry.getKey() - 1, entry.getValue());
+
+                if (num == 0)
                 {
-                    VoiceLeading vln = vl.addChordNew(cr);
-                    vln.setLoss(vl.getLoss() + VoiceLeadingScorer.score(vl.lastChord(), cr) + cr.getLoss());
-                    yieldHelper(num + 1, vln);
+                    VoiceLeading tempvl = new VoiceLeading();
+                    tempvl.addChord(cr);
+                    tempvl.setLoss(tempvl.getLoss() + cr.getLoss());
+                    yieldHelper(num + 1, tempvl);
+                }
+                else
+                {
+                    if (VoiceLeadingValidator.validate(vl.lastChord(), cr))
+                    {
+                        VoiceLeading vln = vl.addChordNew(cr);
+                        vln.setLoss(vl.getLoss() + VoiceLeadingScorer.score(vl.lastChord(), cr) + cr.getLoss());
+                        yieldHelper(num + 1, vln);
+                    }
                 }
             }
         }

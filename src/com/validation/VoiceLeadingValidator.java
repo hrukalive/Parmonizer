@@ -40,7 +40,8 @@ public class VoiceLeadingValidator
                 return false;
 
             // Tendency tone must be resolved
-            if (nc1n.get(i).getTendencies().size() > 0 && nc1n.get(i).getTendencies().indexOf(nc2n.get((i))) == -1)
+            if (nc1n.get(i).getTendencies().size() > 0 && nc1n.get(i).getTendencies().indexOf(nc2n.get(i)) == -1 &&
+                    nc1n.get(i).getAltTendency().size() > 0 && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) == -1)
                 return false;
         }
 
@@ -49,13 +50,13 @@ public class VoiceLeadingValidator
         {
             for (int j = i + 1; j < nc1n.size(); j++)
             {
-                if (nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P1) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P1))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P1) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P1))
                     return false;
-                if (nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P4) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P4))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P4) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P4))
                     return false;
-                if (nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P5) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P5))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P5) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P5))
                     return false;
-                if (nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P8) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P8))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.P8) && nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P8))
                     return false;
             }
         }

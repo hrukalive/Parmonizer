@@ -39,6 +39,12 @@ public class Chord
         {
             this.loss = loss;
         }
+        
+        public void replace(int index, Note note)
+        {
+            cluster.remove(index);
+            cluster.add(index, note);
+        }
 
         @Override public int compareTo(ChordRealization o)
         {
@@ -89,15 +95,20 @@ public class Chord
         public Builder(Note root, Interval intervals[])
         {
             this.noteSet.add(Note.build(root));
-            tendencyIntv.add(new ArrayList<>());
-            tendencyDir.add(new ArrayList<>());
             for (int i = 0; i < intervals.length; i++)
+                this.noteSet.add(root.intervalAbove(intervals[i]));
+            
+            for (int i = 0; i < noteSet.size(); i++)
             {
-                Note temp = root.intervalAbove(intervals[i]);
-                this.noteSet.add(temp);
                 tendencyIntv.add(new ArrayList<>());
                 tendencyDir.add(new ArrayList<>());
+                altTendencyIntv.add(new ArrayList<>());
+                altTendencyDir.add(new ArrayList<>());
+                bonusIntv.add(new ArrayList<>());
+                bonusDir.add(new ArrayList<>());
+                bonusValue.add(new ArrayList<>());
             }
+            
             this.bass = Note.build(root);
         }
         
@@ -108,6 +119,11 @@ public class Chord
             {
                 tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
                 tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
+                altTendencyDir.add(new ArrayList<>(chord.altTendencyDir.get(i)));
+                altTendencyIntv.add(new ArrayList<>(chord.altTendencyIntv.get(i)));
+                bonusDir.add(new ArrayList<>(chord.bonusDir.get(i)));
+                bonusIntv.add(new ArrayList<>(chord.bonusIntv.get(i)));
+                bonusValue.add(new ArrayList<>(chord.bonusValue.get(i)));
             }
             this.bass = Note.build(chord.bass);
             this.inversion = chord.inversion;
@@ -141,29 +157,30 @@ public class Chord
             this.hi = notes;
             return this;
         }
-        public Builder tendency(int voice, Note.Dir dir, Interval intv)
+        public Builder tendency(int chordTone, Note.Dir dir, Interval intv)
         {
-            if (voice >= voices)
-                throw new IllegalArgumentException("Voice required does not exist.");
-            tendencyIntv.get(voice).add(intv);
-            tendencyDir.get(voice).add(dir);
+            if (chordTone < 1 || chordTone > voices)
+                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
+            // Bass is not to be driven by tendency
+            tendencyIntv.get(chordTone - 1).add(intv);
+            tendencyDir.get(chordTone - 1).add(dir);
             return this;
         }
-        public Builder altTendency(int voice, Note.Dir dir, Interval intv)
+        public Builder altTendency(int chordTone, Note.Dir dir, Interval intv)
         {
-            if (voice >= voices)
-                throw new IllegalArgumentException("Voice required does not exist.");
-            altTendencyIntv.get(voice).add(intv);
-            altTendencyDir.get(voice).add(dir);
+            if (chordTone < 1 || chordTone > voices)
+                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
+            altTendencyIntv.get(chordTone - 1).add(intv);
+            altTendencyDir.get(chordTone - 1).add(dir);
             return this;
         }
-        public Builder bonus(int voice, Note.Dir dir, Interval intv, int bonus)
+        public Builder bonus(int chordTone, Note.Dir dir, Interval intv, int bonus)
         {
-            if (voice >= voices)
-                throw new IllegalArgumentException("Voice required does not exist.");
-            bonusIntv.get(voice).add(intv);
-            bonusDir.get(voice).add(dir);
-            bonusValue.get(voice).add(bonus);
+            if (chordTone < 1 || chordTone > voices)
+                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
+            bonusIntv.get(chordTone - 1).add(intv);
+            bonusDir.get(chordTone - 1).add(dir);
+            bonusValue.get(chordTone - 1).add(bonus);
             return this;
         }
         public Chord build()
@@ -229,6 +246,20 @@ public class Chord
                             note.addTendency(note.intervalAbove(tendencyIntv.get(i).get(j)));
                         else
                             note.addTendency(note.intervalBelow(tendencyIntv.get(i).get(j)));
+                    }
+                    for (int j = 0; j < altTendencyDir.get(i).size(); j++)
+                    {
+                        if (altTendencyDir.get(i).get(j) == Note.Dir.Above)
+                            note.addAltTendency(note.intervalAbove(altTendencyIntv.get(i).get(j)));
+                        else
+                            note.addAltTendency(note.intervalBelow(altTendencyIntv.get(i).get(j)));
+                    }
+                    for (int j = 0; j < bonusDir.get(i).size(); j++)
+                    {
+                        if (bonusDir.get(i).get(j) == Note.Dir.Above)
+                            note.addBonus(note.intervalAbove(bonusIntv.get(i).get(j)), bonusValue.get(i).get(j));
+                        else
+                            note.addBonus(note.intervalBelow(bonusIntv.get(i).get(j)), bonusValue.get(i).get(j));
                     }
                     if (note.compareTo(accum.highestNote()) >= 0)
                         yieldHelper(num + 1, accum.addVoiceNew(note), lo, hi, voices);

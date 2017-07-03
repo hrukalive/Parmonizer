@@ -3,6 +3,7 @@ package com.base;
 import com.common.Interval;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +21,8 @@ public final class Note implements Comparable<Note>
     private final int octave;
     private final int alteration;
     private final ArrayList<Note> tendency;
+    private final ArrayList<Note> altTendency;
+    private final HashMap<Note, Integer> bonusMap;
     public enum Dir
     { Above, Below }
 
@@ -29,6 +32,8 @@ public final class Note implements Comparable<Note>
         this.octave = note.octave;
         this.alteration = note.alteration;
         this.tendency = new ArrayList<>(note.tendency);
+        this.altTendency = new ArrayList<>(note.altTendency);
+        this.bonusMap = new HashMap<>(note.bonusMap);
     }
     private Note(int noteCode, int octave, int alteration)
     {
@@ -36,11 +41,21 @@ public final class Note implements Comparable<Note>
         this.octave = octave;
         this.alteration = alteration;
         this.tendency = new ArrayList<>();
+        this.altTendency = new ArrayList<>();
+        this.bonusMap = new HashMap<>();
     }
 
     public void addTendency(Note note) { tendency.add(note); }
     
+    public void addAltTendency(Note note) { altTendency.add(note); }
+    
+    public void addBonus(Note note, int value) { bonusMap.put(note, value); }
+    
     public ArrayList<Note> getTendencies() { return tendency; }
+    
+    public ArrayList<Note> getAltTendency() { return altTendency; }
+    
+    public HashMap<Note, Integer> getBonus() { return bonusMap; }
 
     public static Note build(Note note)
     {

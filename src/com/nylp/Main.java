@@ -31,10 +31,10 @@ public class Main {
         ChordScorer tonic6_cs = new ChordScorer(new int[]{50, 300, 200, 0}, new int[] {0, 0, 300, 0}, new int[]{100, 200, 300, 400});
 
         Chord tonic64 = new Chord.Builder(Note.build("C"), ChordStructure.m.ctor()).inversion(2)
-                .tendency(0, Note.Dir.Below, Interval.m2)
-                .tendency(0, Note.Dir.Below, Interval.M2)
                 .tendency(1, Note.Dir.Below, Interval.m2)
-                .tendency(1, Note.Dir.Below, Interval.M2).build();
+                .tendency(1, Note.Dir.Below, Interval.M2)
+                .tendency(2, Note.Dir.Below, Interval.m2)
+                .tendency(2, Note.Dir.Below, Interval.M2).build();
         ChordValidator tonic64_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
         ChordScorer tonic64_cs = new ChordScorer(new int[]{500, 300, 50}, new int[] {0, 0, 0}, new int[]{100, 200, 300});
         
@@ -54,10 +54,10 @@ public class Main {
         ChordScorer pre_triad_cs = new ChordScorer(new int[]{50, 100, 200}, new int[] {0, 0, 0}, new int[]{100, 200, 300});
 
         Chord dom7 = new Chord.Builder(Note.build("G"), ChordStructure.Mm7.ctor())
-                .tendency(1, Note.Dir.Above, Interval.m2)
-                .tendency(1, Note.Dir.Below, Interval.M3)
-                .tendency(3, Note.Dir.Below, Interval.m2)
-                .tendency(3, Note.Dir.Below, Interval.M2).build();
+                .tendency(2, Note.Dir.Above, Interval.m2)
+                .tendency(2, Note.Dir.Below, Interval.M3)
+                .tendency(4, Note.Dir.Below, Interval.m2)
+                .tendency(4, Note.Dir.Below, Interval.M2).build();
         ChordValidator dom7_cv = new ChordValidator(new boolean[]{true, false, true, false}, new boolean[]{false, false, true, false});
         ChordScorer dom7_cs = new ChordScorer(new int[]{50, 0, 300, 0}, new int[] {0, 0, 30, 0}, new int[]{500, 200, 300});
         
@@ -65,18 +65,18 @@ public class Main {
                 .voices(5)
                 .low(new Note[]{Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4"), Note.build("C4")})
                 .high(new Note[]{Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("A5"), Note.build("A5")})
-                .tendency(1, Note.Dir.Above, Interval.m2)
-                .tendency(1, Note.Dir.Below, Interval.M3)
-                .tendency(3, Note.Dir.Below, Interval.m2)
-                .tendency(3, Note.Dir.Below, Interval.M2).build();
+                .tendency(2, Note.Dir.Above, Interval.m2)
+                .tendency(2, Note.Dir.Below, Interval.M3)
+                .tendency(4, Note.Dir.Below, Interval.m2)
+                .tendency(4, Note.Dir.Below, Interval.M2).build();
         ChordValidator dom9_cv = new ChordValidator(new boolean[]{true, false, true, false, false}, new boolean[]{false, false, true, false, false});
         ChordScorer dom9_cs = new ChordScorer(new int[]{50, 0, 300, 0, 0}, new int[] {0, 0, 100, 0, 0}, new int[]{500, 200, 300, 400});
         
         Chord dom65 = new Chord.Builder(Note.build("G"), ChordStructure.Mm7.ctor()).inversion(1)
-                .tendency(1, Note.Dir.Above, Interval.m2)
-                .tendency(1, Note.Dir.Below, Interval.M3)
-                .tendency(3, Note.Dir.Below, Interval.m2)
-                .tendency(3, Note.Dir.Below, Interval.M2).build();
+                .tendency(2, Note.Dir.Above, Interval.m2)
+                .tendency(2, Note.Dir.Below, Interval.M3)
+                .tendency(4, Note.Dir.Below, Interval.m2)
+                .tendency(4, Note.Dir.Below, Interval.M2).build();
 
         Chord submed_triad = new Chord.Builder(Note.build("Ab"), ChordStructure.M.ctor()).build();
         ChordValidator submed_triad_cv = new ChordValidator(new boolean[]{true, true, true}, new boolean[]{false, false, false});
@@ -95,10 +95,12 @@ public class Main {
 //        progression.addHarmony(new Progression.Harmony(predom11, predom11_cv, predom11_cs));
 //        progression.addHarmony(new Progression.Harmony(dom9, dom9_cv, dom9_cs));
 //        progression.addHarmony(new Progression.Harmony(tonic6, tonic6_cv, tonic6_cs));
-        
-        progression.fixNoteClass(1, 2, Note.build("C"));
-        progression.fixNoteClass(1, 3, Note.build("G"));
-        progression.fixNoteClass(1, 4, Note.build("Eb"));
+
+        progression.insist(1, 1, Note.build("C3"));
+        progression.insist(1, 2, Note.build("C4"));
+        progression.insist(1, 3, Note.build("G4"));
+        progression.insist(1, 4, Note.build("Ab5"));
+        progression.insist(2, 4, Note.build("G5"));
 
         progression.fixNoteClass(2, 4, Note.build("F"));
         progression.fixNoteClass(5, 4, Note.build("F"));
