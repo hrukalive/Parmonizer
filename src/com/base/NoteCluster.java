@@ -34,4 +34,24 @@ public class NoteCluster
     {
         return cluster.toString();
     }
+
+    @Override public boolean equals(Object obj)
+    {
+        if (obj instanceof NoteCluster)
+        {
+            NoteCluster other = (NoteCluster)obj;
+            if (cluster.size() == other.cluster.size())
+            {
+                for (int i = 0; i < cluster.size(); i++)
+                {
+                    if (!cluster.get(i).equals(other.cluster.get(i)))
+                        return false;
+                }
+            }
+            else
+                return false;
+            return true;
+        }
+        return false;
+    }
 }

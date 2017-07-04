@@ -6,7 +6,9 @@ import com.validation.ChordValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Implemented the concept of a chord, with the functionality
@@ -43,7 +45,7 @@ public class Chord
         public void replace(int index, Note note)
         {
             cluster.remove(index);
-            cluster.add(index, note);
+            cluster.add(index, Note.build(note));
         }
 
         @Override public int compareTo(ChordRealization o)
@@ -72,6 +74,7 @@ public class Chord
     private ChordValidator validator;
     private boolean validatorChanged = true;
     private ChordScorer scorer;
+    private HashMap<Integer, Note> insistList = new HashMap<>();
 
     private ArrayList<ChordRealization> realizations = new ArrayList<>();
 
@@ -230,7 +233,14 @@ public class Chord
             if (validator.validate(accum, this))
             {
                 accum.setLoss(scorer.score(accum, this));
-                realizations.add(accum);
+
+                for (Map.Entry<Integer, Note> entry : insistList.entrySet())
+                    accum.replace(entry.getKey() - 1, entry.getValue());
+                if (!validator.withinOctave(accum.getNotes()))
+                    return;
+                
+                if (realizations.indexOf(accum) == -1)
+                    realizations.add(accum);
             }
         }
         else if (num < voices)
@@ -283,6 +293,11 @@ public class Chord
             for (ChordRealization cr : realizations)
                 cr.setLoss(scorer.score(cr, this));
         }
+    }
+
+    public void setInsistList(HashMap<Integer, Note> insistList)
+    {
+        this.insistList = insistList;
     }
 
     public ArrayList getNoteSet()

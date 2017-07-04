@@ -97,12 +97,12 @@ public class Main {
 //        progression.addHarmony(new Progression.Harmony(tonic6, tonic6_cv, tonic6_cs));
 
         progression.insist(1, 1, Note.build("C3"));
-        progression.insist(1, 2, Note.build("C4"));
-        progression.insist(1, 3, Note.build("G4"));
+        progression.insist(1, 2, Note.build("Eb4"));
+        progression.insist(1, 3, Note.build("C5"));
         progression.insist(1, 4, Note.build("Ab5"));
         progression.insist(2, 4, Note.build("G5"));
 
-        progression.fixNoteClass(2, 4, Note.build("F"));
+        progression.fixNoteClass(4, 4, Note.build("Eb"));
         progression.fixNoteClass(5, 4, Note.build("F"));
         progression.fixNoteClass(6, 4, Note.build("Eb"));
         progression.fixNoteClass(7, 4, Note.build("D"));

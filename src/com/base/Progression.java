@@ -130,7 +130,7 @@ public class Progression
 
         public Harmony(Chord chord, ChordValidator cv, ChordScorer cs)
         {
-            this.chord = chord;
+            this.chord = new Chord.Builder(chord).build();
             this.cv = cv;
             this.cs = cs;
         }
@@ -167,7 +167,12 @@ public class Progression
     private ArrayList<HashMap<Integer, Note>> insistList = new ArrayList<>();
     private ArrayList<VoiceLeading> collection = new ArrayList<>();
 
-    public void addHarmony(Harmony harmony) { progression.add(harmony); fixedClass.add(new HashMap<>()); insistList.add(new HashMap<>()); }
+    public void addHarmony(Harmony harmony)
+    { 
+        progression.add(harmony);
+        fixedClass.add(new HashMap<>());
+        insistList.add(new HashMap<>());
+    }
     public void fixNoteClass(int chord, int voice, Note note)
     {
         for (Note n : (ArrayList<Note>)progression.get(chord - 1).chord.getNoteSet())
@@ -176,9 +181,9 @@ public class Progression
             {
                 HashMap<Integer, Note> fixedList = fixedClass.get(chord - 1);
                 if (fixedList.containsKey(voice))
-                    fixedList.replace(voice, note);
+                    fixedList.replace(voice, Note.build(note));
                 else
-                    fixedList.put(voice, note);
+                    fixedList.put(voice, Note.build(note));
             }
         }
     }
@@ -187,9 +192,9 @@ public class Progression
         fixNoteClass(chord, voice, note);
         HashMap<Integer, Note> lst = insistList.get(chord - 1);
         if (lst.containsKey(voice))
-            lst.replace(voice, note);
+            lst.replace(voice, Note.build(note));
         else
-            lst.put(voice, note);
+            lst.put(voice, Note.build(note));
     }
     
     private boolean checkFixedNoteClass(NoteCluster nc, int num)
@@ -221,6 +226,7 @@ public class Progression
             Harmony harmony = progression.get(num);
             harmony.chord.setValidator(harmony.cv);
             harmony.chord.setScorer(harmony.cs);
+            harmony.chord.setInsistList(insistList.get(num));
             harmony.chord.yield();
             ArrayList<Chord.ChordRealization> crs = harmony.chord.getRealizations();
             for (int i = 0; i < crs.size(); i++)
@@ -228,8 +234,6 @@ public class Progression
                 Chord.ChordRealization cr = crs.get(i);
                 if (!checkFixedNoteClass(cr, num))
                     continue;
-                for (Map.Entry<Integer, Note> entry : insistList.get(num).entrySet())
-                    cr.replace(entry.getKey() - 1, entry.getValue());
 
                 if (num == 0)
                 {

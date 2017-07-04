@@ -40,7 +40,7 @@ public class VoiceLeadingScorer
                         accum += 2000;
                 }
             }
-            if (nc1n.get(i).getAltTendency().size() > 0 && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) != -1)
+            if (!nc1n.get(i).getAltTendency().isEmpty() && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) != -1)
                 accum += 50000;
             HashMap<Note, Integer> bonusMap = nc1n.get(i).getBonus();
             if (bonusMap.containsKey(nc2n.get(i)))

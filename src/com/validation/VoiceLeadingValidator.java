@@ -40,8 +40,8 @@ public class VoiceLeadingValidator
                 return false;
 
             // Tendency tone must be resolved
-            if (nc1n.get(i).getTendencies().size() > 0 && nc1n.get(i).getTendencies().indexOf(nc2n.get(i)) == -1 &&
-                    nc1n.get(i).getAltTendency().size() > 0 && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) == -1)
+            if (!nc1n.get(i).getTendencies().isEmpty() && nc1n.get(i).getTendencies().indexOf(nc2n.get(i)) == -1 &&
+                    (nc1n.get(i).getAltTendency().isEmpty() || (!nc1n.get(i).getAltTendency().isEmpty() && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) == -1)))
                 return false;
         }
 

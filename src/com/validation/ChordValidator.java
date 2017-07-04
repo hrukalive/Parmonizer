@@ -22,15 +22,22 @@ public class ChordValidator
         this.repeatability = repeatability;
         this.omitability = omitability;
     }
-
-    public boolean validate(Chord.ChordRealization chordRealization, Chord parent)
+    
+    public boolean withinOctave(ArrayList<Note> chordNotes)
     {
-        ArrayList<Note> chordNotes = chordRealization.getNotes();
         for (int i = 1; i < chordNotes.size() - 1; i++)
         {
             if (chordNotes.get(i + 1).getCode() - chordNotes.get(i).getCode() > 12)
                 return false;
         }
+        return true;
+    }
+
+    public boolean validate(Chord.ChordRealization chordRealization, Chord parent)
+    {
+        ArrayList<Note> chordNotes = chordRealization.getNotes();
+        if (!withinOctave(chordNotes))
+            return false;
 
         for (int i = 0; i < omitability.length; i++)
         {
