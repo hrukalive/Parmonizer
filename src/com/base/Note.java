@@ -23,6 +23,7 @@ public final class Note implements Comparable<Note>
     private final ArrayList<Note> tendency;
     private final ArrayList<Note> altTendency;
     private final HashMap<Note, Integer> bonusMap;
+    private final ArrayList<Note> prepareReq;
     public enum Dir
     { Above, Below }
 
@@ -34,6 +35,7 @@ public final class Note implements Comparable<Note>
         this.tendency = new ArrayList<>(note.tendency);
         this.altTendency = new ArrayList<>(note.altTendency);
         this.bonusMap = new HashMap<>(note.bonusMap);
+        this.prepareReq = new ArrayList<>(note.prepareReq);
     }
     private Note(int noteCode, int octave, int alteration)
     {
@@ -43,6 +45,7 @@ public final class Note implements Comparable<Note>
         this.tendency = new ArrayList<>();
         this.altTendency = new ArrayList<>();
         this.bonusMap = new HashMap<>();
+        this.prepareReq = new ArrayList<>();
     }
 
     public void addTendency(Note note) { tendency.add(note); }
@@ -51,11 +54,15 @@ public final class Note implements Comparable<Note>
     
     public void addBonus(Note note, int value) { bonusMap.put(note, value); }
     
+    public void addPrepare(Note note) { prepareReq.add(note); }
+    
     public ArrayList<Note> getTendencies() { return tendency; }
     
     public ArrayList<Note> getAltTendency() { return altTendency; }
     
     public HashMap<Note, Integer> getBonus() { return bonusMap; }
+    
+    public ArrayList<Note> getPrepare() { return prepareReq; }
 
     public static Note build(Note note)
     {

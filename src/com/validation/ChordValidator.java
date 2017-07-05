@@ -12,7 +12,7 @@ import java.util.Iterator;
  * 
  * Created by NyLP on 6/16/17.
  */
-public class ChordValidator
+public final class ChordValidator
 {
     private final boolean[] repeatability;
     private final boolean[] omitability;

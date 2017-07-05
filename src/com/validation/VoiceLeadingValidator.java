@@ -30,7 +30,7 @@ public class VoiceLeadingValidator
                 return false;
 
             // No leap for larger than P5
-            if (Math.abs(nc1n.get(i).dist(nc2n.get(i))) > Interval.P5.semitones())
+            if (i > 0 && Math.abs(nc1n.get(i).dist(nc2n.get(i))) > Interval.P5.semitones())
                 return false;
 
             // No Aug or Dim interval
@@ -72,6 +72,12 @@ public class VoiceLeadingValidator
             if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.P5))
                 return false;
             if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.P8))
+                return false;
+        }
+        
+        for (int i = 0; i < nc2n.size(); i++)
+        {
+            if (!nc2n.get(i).getPrepare().isEmpty() && nc2n.get(i).getPrepare().indexOf(nc1n.get(i)) == -1)
                 return false;
         }
         return true;

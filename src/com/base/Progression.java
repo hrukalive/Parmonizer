@@ -122,60 +122,20 @@ public class Progression
         }
     }
 
-    public static class Harmony
-    {
-        private Chord chord;
-        private ChordValidator cv;
-        private ChordScorer cs;
-
-        public Harmony(Chord chord, ChordValidator cv, ChordScorer cs)
-        {
-            this.chord = new Chord.Builder(chord).build();
-            this.cv = cv;
-            this.cs = cs;
-        }
-    }
-    
-    private static class Insist
-    {
-        private int voice;
-        private Note note;
-        public Insist(int voice, Note note)
-        {
-            this.voice = voice;
-            this.note = note;
-        }
-
-        public int getVoice()
-        {
-            return voice;
-        }
-
-        public Note getNote()
-        {
-            return note;
-        }
-
-        public void setNote(Note note)
-        {
-            this.note = note;
-        }
-    }
-
-    private ArrayList<Harmony> progression = new ArrayList<>();
+    private ArrayList<Chord> progression = new ArrayList<>();
     private ArrayList<HashMap<Integer, Note>> fixedClass = new ArrayList<>();
     private ArrayList<HashMap<Integer, Note>> insistList = new ArrayList<>();
     private ArrayList<VoiceLeading> collection = new ArrayList<>();
 
-    public void addHarmony(Harmony harmony)
+    public void addHarmony(Chord chord)
     { 
-        progression.add(harmony);
+        progression.add(new Chord.Builder(chord).build());
         fixedClass.add(new HashMap<>());
         insistList.add(new HashMap<>());
     }
     public void fixNoteClass(int chord, int voice, Note note)
     {
-        for (Note n : (ArrayList<Note>)progression.get(chord - 1).chord.getNoteSet())
+        for (Note n : (ArrayList<Note>)progression.get(chord - 1).getNoteSet())
         {
             if (n.isEnharmonicNoClass(note))
             {
@@ -223,12 +183,10 @@ public class Progression
         }
         else if (num < progression.size())
         {
-            Harmony harmony = progression.get(num);
-            harmony.chord.setValidator(harmony.cv);
-            harmony.chord.setScorer(harmony.cs);
-            harmony.chord.setInsistList(insistList.get(num));
-            harmony.chord.yield();
-            ArrayList<Chord.ChordRealization> crs = harmony.chord.getRealizations();
+            Chord harmony = progression.get(num);
+            harmony.setInsistList(insistList.get(num));
+            harmony.yield();
+            ArrayList<Chord.ChordRealization> crs = harmony.getRealizations();
             for (int i = 0; i < crs.size(); i++)
             {
                 Chord.ChordRealization cr = crs.get(i);

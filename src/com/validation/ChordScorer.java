@@ -13,7 +13,7 @@ import java.util.Iterator;
  * Created by NyLP on 6/16/17.
  */
 
-public class ChordScorer
+public final class ChordScorer
 {
     private final int[] repeatPenalty;
     private final int[] omitPenalty;

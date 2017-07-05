@@ -58,6 +58,8 @@ public class Chord
     }
 
     private ArrayList<Note> noteSet = new ArrayList<Note>();
+    private ArrayList<ArrayList<Interval>> prepareIntv = new ArrayList<>();
+    private ArrayList<ArrayList<Note.Dir>> prepareDir = new ArrayList<>();
     private ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
     private ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
     private ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
@@ -81,6 +83,8 @@ public class Chord
     public static class Builder
     {
         private final ArrayList<Note> noteSet = new ArrayList<>();
+        private final ArrayList<ArrayList<Interval>> prepareIntv = new ArrayList<>();
+        private final ArrayList<ArrayList<Note.Dir>> prepareDir = new ArrayList<>();
         private final ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
         private final ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
         private final ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
@@ -95,6 +99,9 @@ public class Chord
         private Note[] lo = new Note[] {Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4")};
         private Note[] hi = new Note[] {Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("C6")};
 
+        private ChordValidator validator = null;
+        private ChordScorer scorer = null;
+
         public Builder(Note root, Interval intervals[])
         {
             this.noteSet.add(Note.build(root));
@@ -103,6 +110,8 @@ public class Chord
             
             for (int i = 0; i < noteSet.size(); i++)
             {
+                prepareIntv.add(new ArrayList<>());
+                prepareDir.add(new ArrayList<>());
                 tendencyIntv.add(new ArrayList<>());
                 tendencyDir.add(new ArrayList<>());
                 altTendencyIntv.add(new ArrayList<>());
@@ -120,6 +129,8 @@ public class Chord
             this.noteSet.addAll(chord.noteSet);
             for (int i = 0; i < chord.tendencyIntv.size(); i++)
             {
+                prepareIntv.add(new ArrayList<>(chord.prepareIntv.get(i)));
+                prepareDir.add(new ArrayList<>(chord.prepareDir.get(i)));
                 tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
                 tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
                 altTendencyDir.add(new ArrayList<>(chord.altTendencyDir.get(i)));
@@ -133,6 +144,8 @@ public class Chord
             this.voices = chord.voices;
             this.lo = chord.lo;
             this.hi = chord.hi;
+            this.validator = chord.validator;
+            this.scorer = chord.scorer;
         }
 
         public Builder inversion(int inv)
@@ -158,6 +171,14 @@ public class Chord
             if (notes.length < voices)
                 throw new IllegalArgumentException("Range specification does not match #voices.");
             this.hi = notes;
+            return this;
+        }
+        public Builder preparedBy(int chordTone, Note.Dir dir, Interval intv)
+        {
+            if (chordTone < 1 || chordTone > voices)
+                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
+            prepareIntv.get(chordTone - 1).add(intv);
+            prepareDir.get(chordTone - 1).add(dir);
             return this;
         }
         public Builder tendency(int chordTone, Note.Dir dir, Interval intv)
@@ -186,6 +207,16 @@ public class Chord
             bonusValue.get(chordTone - 1).add(bonus);
             return this;
         }
+        public Builder validator(ChordValidator validator)
+        {
+            this.validator = validator;
+            return this;
+        }
+        public Builder scorer(ChordScorer scorer)
+        {
+            this.scorer = scorer;
+            return this;
+        }
         public Chord build()
         {
             return new Chord(this);
@@ -202,6 +233,8 @@ public class Chord
         lo = builder.lo;
         hi = builder.hi;
 
+        prepareDir = builder.prepareDir;
+        prepareIntv = builder.prepareIntv;
         tendencyDir = builder.tendencyDir;
         tendencyIntv = builder.tendencyIntv;
         altTendencyDir = builder.altTendencyDir;
@@ -209,6 +242,12 @@ public class Chord
         bonusDir = builder.bonusDir;
         bonusIntv = builder.bonusIntv;
         bonusValue = builder.bonusValue;
+        
+        if (builder.validator != null && builder.scorer != null)
+        {
+            setValidator(builder.validator);
+            setScorer(builder.scorer);
+        }
     }
 
     public void yield()
@@ -250,6 +289,13 @@ public class Chord
                 Note note_proto = noteSet.get(i);
                 for (Note note : note_proto.allInRange(lo[num], hi[num]))
                 {
+                    for (int j = 0; j < prepareDir.get(i).size(); j++)
+                    {
+                        if (prepareDir.get(i).get(j) == Note.Dir.Above)
+                            note.addPrepare(note.intervalAbove(prepareIntv.get(i).get(j)));
+                        else
+                            note.addPrepare(note.intervalBelow(prepareIntv.get(i).get(j)));
+                    }
                     for (int j = 0; j < tendencyDir.get(i).size(); j++)
                     {
                         if (tendencyDir.get(i).get(j) == Note.Dir.Above)

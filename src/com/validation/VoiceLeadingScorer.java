@@ -21,7 +21,9 @@ public class VoiceLeadingScorer
         ArrayList<Note> nc1n = nc1.getNotes();
         ArrayList<Note> nc2n = nc2.getNotes();
         int accum = 0;
-        for (int i = 0; i < nc1n.size(); i++)
+        
+        accum += 1000 * Math.abs(nc1n.get(0).dist(nc2n.get(0)));
+        for (int i = 1; i < nc1n.size(); i++)
             accum += 50 * Math.abs(nc1n.get(i).dist(nc2n.get(i)));
 
         for (int i = 0; i < nc1n.size() - 1; i++)
