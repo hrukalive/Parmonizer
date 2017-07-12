@@ -38,10 +38,13 @@ public class ChordBuilder
             omitability.add(true);
             omitPenalty.add(500);
         }
-        repeatability.add(false);
-        repeatPenalty.add(0);
-        omitability.add(false);
-        omitPenalty.add(0);
+        if (numChordtones > 3)
+        {
+            repeatability.add(false);
+            repeatPenalty.add(0);
+            omitability.add(false);
+            omitPenalty.add(0);
+        }
     }
     
     public ChordBuilder repeatability(int chordTone, boolean value)
@@ -106,6 +109,8 @@ public class ChordBuilder
         this.chordBuilder.scorer(new ChordScorer(i1, i2, i3));
         return this;
     }
+    public Chord.Builder chord()
+    { return this.chordBuilder; }
     
     public Chord.Builder build()
     { return chordBuilder; }

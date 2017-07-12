@@ -124,6 +124,30 @@ public class Chord
             this.bass = Note.build(root);
         }
         
+        public Builder(Builder chord)
+        {
+            this.noteSet.addAll(chord.noteSet);
+            for (int i = 0; i < chord.tendencyIntv.size(); i++)
+            {
+                prepareIntv.add(new ArrayList<>(chord.prepareIntv.get(i)));
+                prepareDir.add(new ArrayList<>(chord.prepareDir.get(i)));
+                tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
+                tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
+                altTendencyDir.add(new ArrayList<>(chord.altTendencyDir.get(i)));
+                altTendencyIntv.add(new ArrayList<>(chord.altTendencyIntv.get(i)));
+                bonusDir.add(new ArrayList<>(chord.bonusDir.get(i)));
+                bonusIntv.add(new ArrayList<>(chord.bonusIntv.get(i)));
+                bonusValue.add(new ArrayList<>(chord.bonusValue.get(i)));
+            }
+            this.bass = Note.build(chord.bass);
+            this.inversion = chord.inversion;
+            this.voices = chord.voices;
+            this.lo = chord.lo;
+            this.hi = chord.hi;
+            this.validator = chord.validator;
+            this.scorer = chord.scorer;
+        }
+        
         public Builder(Chord chord)
         {
             this.noteSet.addAll(chord.noteSet);
