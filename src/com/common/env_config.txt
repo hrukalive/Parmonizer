@@ -1,0 +1,155 @@
+{
+    "scales": [
+        "scale": {
+            "name": "diatonic",
+            "primary_interval": ["+M2", "+M2", "+m2", "+M2", "+M2", "+M2", "+m2"],
+            "modes": [
+                "mode": {
+                    "name": "ionian;major",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "dorian",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "phrygian",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "lydian",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "mixolydian",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "aeolian/natural minor",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "harmonic minor",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "+m2"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "+m2"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "melodic minor",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "+m2", "+m2"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "locrian",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+d5"
+                }
+            ]
+        }
+        "scale": {
+            "scale_name": "pentatonic",
+            "primary_dir": "+",
+            "primary_interval": ["M2", "M2", "m3", "M2", "m3"],
+            "modes": [
+                "mode": {
+                    "name": "gong",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "shang",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "jue",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "zhi",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                },
+                "mode": {
+                    "name": "yu",
+                    "primary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "secondary_alteration": ["P1", "P1", "P1", "P1", "P1"],
+                    "negative": true,
+                    "negative_generator": "+P5"
+                }
+            ]
+        }
+    ],
+    
+    "chords": [
+        "chord": {
+            "pattern": "i%INV%;im%INV%",
+            "inv": {
+                "(empty)": 0,
+                "6": 1,
+                "64": 2
+            },
+            "mode": "diatonic.aeolian",
+            "structure": [1, 3, 5],
+            "repeatability": ["T(50)", "T(500)", "T(200)"],
+            "omissibility": ["F", "F", "T(500)"],
+            "unison_penalty": ["100", "200", "300"]
+        }
+        "chord": {
+            "pattern": "%NOTE%M(/%NOTE%);%NOTE%maj(/%NOTE%)",
+            "mode": "diatonic.ionian",
+            "structure": [1, 3, 5],
+            "repeatability": ["T(50)", "T(500)", "T(200)"],
+            "omissibility": ["F", "F", "T(500)"],
+            "unison_penalty": ["100", "200", "300"]
+        }
+        "chord": {
+            "pattern": "%NOTE%m(/%NOTE%);%NOTE%min(/%NOTE%)",
+            "mode": "diatonic.aeolian",
+            "structure": [1, 3, 5],
+            "repeatability": ["T(50)", "T(500)", "T(200)"],
+            "omissibility": ["F", "F", "T(500)"],
+            "unison_penalty": ["100", "200", "300"]
+        }
+        "chord": {
+            "pattern": "%NOTE%o(/%NOTE%);%NOTE%dim(/%NOTE%)",
+            "mode": "diatonic.ionian",
+            "structure": [7, 2, 4],
+            "repeatability": ["F", "T(500)", "T(200)"],
+            "omissibility": ["F", "F", "T(500)"],
+            "unison_penalty": ["100", "200", "300"]
+        }
+    ]
+}

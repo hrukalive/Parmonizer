@@ -2,8 +2,7 @@ package com.validation;
 
 import com.base.Chord;
 import com.base.Note;
-import com.base.NoteCluster;
-import com.common.Interval;
+import com.base.Interval;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 
 public class VoiceLeadingScorer
 {
-    public static int score(NoteCluster nc1, NoteCluster nc2)
+    public static int score(Chord.NoteCluster nc1, Chord.NoteCluster nc2)
     {
         ArrayList<Note> nc1n = nc1.getNotes();
         ArrayList<Note> nc2n = nc2.getNotes();
@@ -30,15 +29,16 @@ public class VoiceLeadingScorer
         {
             for (int j = i + 1; j < nc1n.size(); j++)
             {
-                if (nc1n.get(i).compareTo(nc2n.get(i)) < 0 && nc1n.get(j).compareTo(nc2n.get(j)) > 0 && Math.abs(nc1n.get(j).dist(nc2n.get(j))) > Interval.M2.semitones())
+                if (nc1n.get(i).compareTo(nc2n.get(i)) < 0 && nc1n.get(j).compareTo(nc2n.get(j)) > 0 && 
+                        Math.abs(nc1n.get(j).dist(nc2n.get(j))) > Interval.parse("M2").semitones())
                 {
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P1))
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P1")))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P4))
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P4")))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P5))
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P5")))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.P8))
+                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P8")))
                         accum += 2000;
                 }
             }

@@ -1,14 +1,11 @@
 package com.base;
 
-import com.common.Interval;
 import com.validation.ChordScorer;
 import com.validation.ChordValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Implemented the concept of a chord, with the functionality
@@ -19,17 +16,157 @@ import java.util.Map;
 
 public class Chord
 {
-    public class ChordRealization extends NoteCluster implements Comparable<ChordRealization>
+    public static final class ChordNoteConfig
     {
-        private int loss = 0;
-        public ChordRealization() { super(); }
-        public ChordRealization(ChordRealization realization) { super(realization); this.loss = realization.loss; }
+        private final Note note;
+        private final Tuple<Boolean, Integer> repeatConfig;
+        private final Tuple<Boolean, Integer> omitConfig;
+        private final ArrayList<Interval> prepareList = new ArrayList<>();
+        private final ArrayList<Interval> tendencyList = new ArrayList<>();
+        private final ArrayList<Interval> altTendencyList = new ArrayList<>();
+        private final ArrayList<Tuple<Interval, Integer>> bonusList = new ArrayList<>();
 
-        @Override public ChordRealization addVoiceNew(Note note)
+        public ChordNoteConfig(Note note, Tuple<Boolean, Integer> repeatConfig, Tuple<Boolean, Integer> omitConfig)
         {
-            ChordRealization ret = new ChordRealization(this);
-            ret.addVoice(Note.build(note));
+            this.note = note;
+            this.repeatConfig = repeatConfig;
+            this.omitConfig = omitConfig;
+        }
+        public ChordNoteConfig(ChordNoteConfig config)
+        {
+            this.note = Note.build(config.note);
+            this.repeatConfig = config.repeatConfig;
+            this.omitConfig = config.omitConfig;
+            this.prepareList.addAll(config.prepareList);
+            this.tendencyList.addAll(config.tendencyList);
+            this.altTendencyList.addAll(config.altTendencyList);
+            this.bonusList.addAll(config.bonusList);
+        }
+
+        public Note getNote()
+        {
+            return note;
+        }
+
+        public Tuple<Boolean, Integer> getRepeatConfig()
+        {
+            return repeatConfig;
+        }
+
+        public Tuple<Boolean, Integer> getOmitConfig()
+        {
+            return omitConfig;
+        }
+
+        public ArrayList<Interval> getPrepareList()
+        {
+            return prepareList;
+        }
+
+        public ArrayList<Interval> getTendencyList()
+        {
+            return tendencyList;
+        }
+
+        public ArrayList<Interval> getAltTendencyList()
+        {
+            return altTendencyList;
+        }
+
+        public ArrayList<Tuple<Interval, Integer>> getBonusList()
+        {
+            return bonusList;
+        }
+    }
+
+    public static final class VoiceConfig
+    {
+        private final Note low;
+        private final Note high;
+        private ChordNoteConfig fixClassNote;
+        private Note insistNote;
+        private int unisonPenalty;
+
+        public VoiceConfig(Note low, Note high)
+        {
+            this(low, high, null, null, 0);
+        }
+        public VoiceConfig(Note low, Note high, ChordNoteConfig fixClassNote, Note insistNote, int unisonPenalty)
+        {
+            this.low = low;
+            this.high = high;
+            this.fixClassNote = fixClassNote;
+            this.insistNote = insistNote;
+            this.unisonPenalty = unisonPenalty;
+        }
+
+        public Note getLow()
+        {
+            return low;
+        }
+
+        public Note getHigh()
+        {
+            return high;
+        }
+
+        public ChordNoteConfig getFixClassNote()
+        {
+            return fixClassNote;
+        }
+
+        public void setFixClassNote(ChordNoteConfig fixClassNote)
+        {
+            this.fixClassNote = fixClassNote;
+        }
+
+        public Note getInsistNote()
+        {
+            return insistNote;
+        }
+
+        public void setInsistNote(Note insistNote)
+        {
+            this.insistNote = insistNote;
+        }
+
+        public int getUnisonPenalty()
+        {
+            return unisonPenalty;
+        }
+
+        public void setUnisonPenalty(int unisonPenalty)
+        {
+            this.unisonPenalty = unisonPenalty;
+        }
+    }
+    
+    public class NoteCluster implements Comparable<NoteCluster>
+    {
+        private final ArrayList<Note> cluster;
+        private int loss = 0;
+
+        private NoteCluster() { cluster = new ArrayList<>(); }
+        private NoteCluster(com.base.Chord.NoteCluster cluster)
+        {
+            this.cluster = new ArrayList<>(cluster.getNotes());
+            this.loss = cluster.loss;
+        }
+
+        private void addVoice(Note note) { cluster.add(note); }
+
+        private NoteCluster addVoiceNew(Note note)
+        {
+            NoteCluster ret = new NoteCluster(this);
+            ret.addVoice(note);
             return ret;
+        }
+
+        private Note highestNote() { return cluster.size() == 0 ? null : cluster.get(cluster.size() - 1); }
+
+        public ArrayList<Note> getNotes()
+        {
+            return cluster;
         }
 
         public int getLoss()
@@ -37,270 +174,91 @@ public class Chord
             return loss;
         }
 
-        public void setLoss(int loss)
+        private void setLoss(int loss)
         {
             this.loss = loss;
         }
-        
-        public void replace(int index, Note note)
+
+        private void replace(int index, Note note)
         {
             cluster.remove(index);
             cluster.add(index, Note.build(note));
         }
 
-        @Override public int compareTo(ChordRealization o)
+        @Override public int compareTo(com.base.Chord.NoteCluster o)
         {
             if (o == null) throw new NullPointerException("Null Chord to compare");
             if (loss > o.loss) return 1;
             if (loss < o.loss) return -1;
             return 0;
         }
+
+        @Override public boolean equals(Object obj)
+        {
+            if (obj instanceof com.base.Chord.NoteCluster)
+            {
+                com.base.Chord.NoteCluster other = (com.base.Chord.NoteCluster)obj;
+                if (cluster.size() == other.cluster.size())
+                {
+                    for (int i = 0; i < cluster.size(); i++)
+                    {
+                        if (!cluster.get(i).equals(other.cluster.get(i)))
+                            return false;
+                    }
+                }
+                else
+                    return false;
+                return true;
+            }
+            return false;
+        }
+
+        @Override public String toString()
+        {
+            return cluster.toString();
+        }
     }
 
-    private ArrayList<Note> noteSet = new ArrayList<Note>();
-    private ArrayList<ArrayList<Interval>> prepareIntv = new ArrayList<>();
-    private ArrayList<ArrayList<Note.Dir>> prepareDir = new ArrayList<>();
-    private ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
-    private ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
-    private ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
-    private ArrayList<ArrayList<Note.Dir>> altTendencyDir = new ArrayList<>();
-    private ArrayList<ArrayList<Interval>> bonusIntv = new ArrayList<>();
-    private ArrayList<ArrayList<Note.Dir>> bonusDir = new ArrayList<>();
-    private ArrayList<ArrayList<Integer>> bonusValue = new ArrayList<>();
-    private Note bass;
-
-    private int inversion;
-    private int voices;
-    private Note[] lo;
-    private Note[] hi;
+    private ArrayList<ChordNoteConfig> noteList;
+    private ArrayList<VoiceConfig> voiceList;
+    
     private ChordValidator validator;
-    private boolean validatorChanged = true;
     private ChordScorer scorer;
-    private HashMap<Integer, Note> insistList = new HashMap<>();
 
-    private ArrayList<ChordRealization> realizations = new ArrayList<>();
+    private ArrayList<NoteCluster> realizations = new ArrayList<>();
 
-    public static class Builder
+    public Chord(ArrayList<ChordNoteConfig> noteList, ArrayList<VoiceConfig> voiceList)
     {
-        private final ArrayList<Note> noteSet = new ArrayList<>();
-        private final ArrayList<ArrayList<Interval>> prepareIntv = new ArrayList<>();
-        private final ArrayList<ArrayList<Note.Dir>> prepareDir = new ArrayList<>();
-        private final ArrayList<ArrayList<Interval>> tendencyIntv = new ArrayList<>();
-        private final ArrayList<ArrayList<Note.Dir>> tendencyDir = new ArrayList<>();
-        private final ArrayList<ArrayList<Interval>> altTendencyIntv = new ArrayList<>();
-        private final ArrayList<ArrayList<Note.Dir>> altTendencyDir = new ArrayList<>();
-        private final ArrayList<ArrayList<Interval>> bonusIntv = new ArrayList<>();
-        private final ArrayList<ArrayList<Note.Dir>> bonusDir = new ArrayList<>();
-        private final ArrayList<ArrayList<Integer>> bonusValue = new ArrayList<>();
-        private Note bass;
-
-        private int inversion = 0;
-        private int voices = 4;
-        private Note[] lo = new Note[] {Note.build("E2"), Note.build("B2"), Note.build("F3"), Note.build("C4")};
-        private Note[] hi = new Note[] {Note.build("E4"), Note.build("A4"), Note.build("E5"), Note.build("C6")};
-
-        private ChordValidator validator = null;
-        private ChordScorer scorer = null;
-
-        public Builder(Note root, Interval intervals[])
-        {
-            this.noteSet.add(Note.build(root));
-            for (int i = 0; i < intervals.length; i++)
-                this.noteSet.add(root.intervalAbove(intervals[i]));
-            
-            for (int i = 0; i < noteSet.size(); i++)
-            {
-                prepareIntv.add(new ArrayList<>());
-                prepareDir.add(new ArrayList<>());
-                tendencyIntv.add(new ArrayList<>());
-                tendencyDir.add(new ArrayList<>());
-                altTendencyIntv.add(new ArrayList<>());
-                altTendencyDir.add(new ArrayList<>());
-                bonusIntv.add(new ArrayList<>());
-                bonusDir.add(new ArrayList<>());
-                bonusValue.add(new ArrayList<>());
-            }
-            
-            this.bass = Note.build(root);
-        }
-        
-        public Builder(Builder chord)
-        {
-            this.noteSet.addAll(chord.noteSet);
-            for (int i = 0; i < chord.tendencyIntv.size(); i++)
-            {
-                prepareIntv.add(new ArrayList<>(chord.prepareIntv.get(i)));
-                prepareDir.add(new ArrayList<>(chord.prepareDir.get(i)));
-                tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
-                tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
-                altTendencyDir.add(new ArrayList<>(chord.altTendencyDir.get(i)));
-                altTendencyIntv.add(new ArrayList<>(chord.altTendencyIntv.get(i)));
-                bonusDir.add(new ArrayList<>(chord.bonusDir.get(i)));
-                bonusIntv.add(new ArrayList<>(chord.bonusIntv.get(i)));
-                bonusValue.add(new ArrayList<>(chord.bonusValue.get(i)));
-            }
-            this.bass = Note.build(chord.bass);
-            this.inversion = chord.inversion;
-            this.voices = chord.voices;
-            this.lo = chord.lo;
-            this.hi = chord.hi;
-            this.validator = chord.validator;
-            this.scorer = chord.scorer;
-        }
-        
-        public Builder(Chord chord)
-        {
-            this.noteSet.addAll(chord.noteSet);
-            for (int i = 0; i < chord.tendencyIntv.size(); i++)
-            {
-                prepareIntv.add(new ArrayList<>(chord.prepareIntv.get(i)));
-                prepareDir.add(new ArrayList<>(chord.prepareDir.get(i)));
-                tendencyDir.add(new ArrayList<>(chord.tendencyDir.get(i)));
-                tendencyIntv.add(new ArrayList<>(chord.tendencyIntv.get(i)));
-                altTendencyDir.add(new ArrayList<>(chord.altTendencyDir.get(i)));
-                altTendencyIntv.add(new ArrayList<>(chord.altTendencyIntv.get(i)));
-                bonusDir.add(new ArrayList<>(chord.bonusDir.get(i)));
-                bonusIntv.add(new ArrayList<>(chord.bonusIntv.get(i)));
-                bonusValue.add(new ArrayList<>(chord.bonusValue.get(i)));
-            }
-            this.bass = Note.build(chord.bass);
-            this.inversion = chord.inversion;
-            this.voices = chord.voices;
-            this.lo = chord.lo;
-            this.hi = chord.hi;
-            this.validator = chord.validator;
-            this.scorer = chord.scorer;
-        }
-
-        public Builder inversion(int inv)
-        {
-            this.inversion = inv;
-            this.bass = Note.build(noteSet.get(inv));
-            return this;
-        }
-        public Builder voices(int voices)
-        {
-            this.voices = voices;
-            return this;
-        }
-        public Builder low(Note notes[])
-        {
-            if (notes.length < voices)
-                throw new IllegalArgumentException("Range specification does not match #voices.");
-            this.lo = notes;
-            return this;
-        }
-        public Builder high(Note notes[])
-        {
-            if (notes.length < voices)
-                throw new IllegalArgumentException("Range specification does not match #voices.");
-            this.hi = notes;
-            return this;
-        }
-        public Builder preparedBy(int chordTone, Note.Dir dir, Interval intv)
-        {
-            if (chordTone < 1 || chordTone > voices)
-                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
-            prepareIntv.get(chordTone - 1).add(intv);
-            prepareDir.get(chordTone - 1).add(dir);
-            return this;
-        }
-        public Builder tendency(int chordTone, Note.Dir dir, Interval intv)
-        {
-            if (chordTone < 1 || chordTone > voices)
-                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
-            // Bass is not to be driven by tendency
-            tendencyIntv.get(chordTone - 1).add(intv);
-            tendencyDir.get(chordTone - 1).add(dir);
-            return this;
-        }
-        public Builder altTendency(int chordTone, Note.Dir dir, Interval intv)
-        {
-            if (chordTone < 1 || chordTone > voices)
-                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
-            altTendencyIntv.get(chordTone - 1).add(intv);
-            altTendencyDir.get(chordTone - 1).add(dir);
-            return this;
-        }
-        public Builder bonus(int chordTone, Note.Dir dir, Interval intv, int bonus)
-        {
-            if (chordTone < 1 || chordTone > voices)
-                throw new IllegalArgumentException("Voice chosen cannot have tendency.");
-            bonusIntv.get(chordTone - 1).add(intv);
-            bonusDir.get(chordTone - 1).add(dir);
-            bonusValue.get(chordTone - 1).add(bonus);
-            return this;
-        }
-        public Builder validator(ChordValidator validator)
-        {
-            this.validator = validator;
-            return this;
-        }
-        public Builder scorer(ChordScorer scorer)
-        {
-            this.scorer = scorer;
-            return this;
-        }
-        public Chord build()
-        {
-            return new Chord(this);
-        }
+        this.noteList = new ArrayList<>(noteList);
+        this.voiceList = new ArrayList<>(voiceList);
+        ArrayList<Integer> unisonPenalty = new ArrayList<>();
+        for (int i = 0; i < voiceList.size() - 1; i++)
+            unisonPenalty.add(voiceList.get(i).getUnisonPenalty());
+        validator = new ChordValidator((ArrayList<Boolean>) noteList.stream().map(n -> n.getRepeatConfig().getFirst()).collect(Collectors.toList()),
+                                       (ArrayList<Boolean>) noteList.stream().map(n -> n.getOmitConfig().getFirst()).collect(Collectors.toList()));
+        scorer = new ChordScorer((ArrayList<Integer>) noteList.stream().map(n -> n.getRepeatConfig().getSecond()).collect(Collectors.toList()),
+                                 (ArrayList<Integer>) noteList.stream().map(n -> n.getOmitConfig().getSecond()).collect(Collectors.toList()),
+                                 unisonPenalty);
     }
-
-    private Chord(Builder builder)
+    public Chord(Chord chord)
     {
-        noteSet = builder.noteSet;
-        bass = builder.bass;
-
-        inversion = builder.inversion;
-        voices = builder.voices;
-        lo = builder.lo;
-        hi = builder.hi;
-
-        prepareDir = builder.prepareDir;
-        prepareIntv = builder.prepareIntv;
-        tendencyDir = builder.tendencyDir;
-        tendencyIntv = builder.tendencyIntv;
-        altTendencyDir = builder.altTendencyDir;
-        altTendencyIntv = builder.altTendencyIntv;
-        bonusDir = builder.bonusDir;
-        bonusIntv = builder.bonusIntv;
-        bonusValue = builder.bonusValue;
-        
-        if (builder.validator != null && builder.scorer != null)
-        {
-            setValidator(builder.validator);
-            setScorer(builder.scorer);
-        }
+        this(chord.noteList, chord.voiceList);
     }
 
     public void yield()
     {
-        if (!validatorChanged)
-            return;
-        
-        validatorChanged = false;
         realizations.clear();
-        for (Note bassNote : bass.allInRange(lo[0], hi[0]))
-        {
-            ChordRealization temp = new ChordRealization();
-            Note tempnote = Note.build(bassNote);
-            temp.addVoice(tempnote);
-            yieldHelper(1, temp, lo, hi, voices);
-        }
+        NoteCluster temp = new NoteCluster();
+        yieldHelper(0, temp, voiceList.size());
     }
-    private void yieldHelper(int num, ChordRealization accum, Note[] lo, Note[] hi, int voices)
+    
+    private void yieldHelper(int num, NoteCluster accum, int voices)
     {
         if (num == voices)
         {
-            if (validator.validate(accum, this))
+            if (validator.validate(accum.getNotes(), this))
             {
-                accum.setLoss(scorer.score(accum, this));
-
-                for (Map.Entry<Integer, Note> entry : insistList.entrySet())
-                    accum.replace(entry.getKey() - 1, entry.getValue());
-                if (!validator.withinOctave(accum.getNotes()))
-                    return;
+                accum.setLoss(scorer.score(accum.getNotes(), this));
                 
                 if (realizations.indexOf(accum) == -1)
                     realizations.add(accum);
@@ -308,74 +266,41 @@ public class Chord
         }
         else if (num < voices)
         {
-            for (int i = 0; i < noteSet.size(); i++)
+            VoiceConfig voiceConfig = voiceList.get(num);
+            if (voiceConfig.getInsistNote() != null)
             {
-                Note note_proto = noteSet.get(i);
-                for (Note note : note_proto.allInRange(lo[num], hi[num]))
+                Note note = voiceConfig.getInsistNote();
+                note.setInsisted();
+                yieldHelper(num + 1, accum.addVoiceNew(note), voices);
+            }
+            else if (voiceConfig.getFixClassNote() != null)
+                for (Note note : voiceConfig.getFixClassNote().getNote().allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
+                    yieldHelper(num + 1, accum.addVoiceNew(note), voices);
+            else
+            {
+                for (ChordNoteConfig noteConfig : noteList)
                 {
-                    for (int j = 0; j < prepareDir.get(i).size(); j++)
+                    for (Note note : noteConfig.getNote().allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
                     {
-                        if (prepareDir.get(i).get(j) == Note.Dir.Above)
-                            note.addPrepare(note.intervalAbove(prepareIntv.get(i).get(j)));
-                        else
-                            note.addPrepare(note.intervalBelow(prepareIntv.get(i).get(j)));
+                        noteConfig.getPrepareList().forEach(intv -> note.addPrepare(note.interval(intv)));
+                        noteConfig.getTendencyList().forEach(intv -> note.addTendency(note.interval(intv)));
+                        noteConfig.getAltTendencyList().forEach(intv -> note.addAltTendency(note.interval(intv)));
+                        noteConfig.getBonusList().forEach(tuple -> note.addBonus(note.interval(tuple.getFirst()), tuple.getSecond()));
+                        
+                        if (accum.highestNote() == null || note.compareTo(accum.highestNote()) >= 0)
+                            yieldHelper(num + 1, accum.addVoiceNew(note), voices);
                     }
-                    for (int j = 0; j < tendencyDir.get(i).size(); j++)
-                    {
-                        if (tendencyDir.get(i).get(j) == Note.Dir.Above)
-                            note.addTendency(note.intervalAbove(tendencyIntv.get(i).get(j)));
-                        else
-                            note.addTendency(note.intervalBelow(tendencyIntv.get(i).get(j)));
-                    }
-                    for (int j = 0; j < altTendencyDir.get(i).size(); j++)
-                    {
-                        if (altTendencyDir.get(i).get(j) == Note.Dir.Above)
-                            note.addAltTendency(note.intervalAbove(altTendencyIntv.get(i).get(j)));
-                        else
-                            note.addAltTendency(note.intervalBelow(altTendencyIntv.get(i).get(j)));
-                    }
-                    for (int j = 0; j < bonusDir.get(i).size(); j++)
-                    {
-                        if (bonusDir.get(i).get(j) == Note.Dir.Above)
-                            note.addBonus(note.intervalAbove(bonusIntv.get(i).get(j)), bonusValue.get(i).get(j));
-                        else
-                            note.addBonus(note.intervalBelow(bonusIntv.get(i).get(j)), bonusValue.get(i).get(j));
-                    }
-                    if (note.compareTo(accum.highestNote()) >= 0)
-                        yieldHelper(num + 1, accum.addVoiceNew(note), lo, hi, voices);
                 }
             }
         }
     }
 
-    public void setValidator(ChordValidator validator)
+    public ArrayList<Note> getNoteSet()
     {
-        this.validator = validator;
-        validatorChanged = true;
+        return (ArrayList<Note>)noteList.stream().map(ChordNoteConfig::getNote).collect(Collectors.toList());
     }
 
-    public void setScorer(ChordScorer scorer)
-    {
-        this.scorer = scorer;
-        
-        if (!realizations.isEmpty())
-        {
-            for (ChordRealization cr : realizations)
-                cr.setLoss(scorer.score(cr, this));
-        }
-    }
-
-    public void setInsistList(HashMap<Integer, Note> insistList)
-    {
-        this.insistList = insistList;
-    }
-
-    public ArrayList getNoteSet()
-    {
-        return noteSet;
-    }
-
-    public ArrayList<ChordRealization> getRealizations()
+    public ArrayList<NoteCluster> getRealizations()
     {
         Collections.sort(realizations);
         return realizations;
@@ -383,11 +308,11 @@ public class Chord
 
     public Note getBass()
     {
-        return bass;
+        return voiceList.get(0).getFixClassNote().getNote();
     }
 
     @Override public String toString()
     {
-        return noteSet.toString();
+        return noteList.toString();
     }
 }

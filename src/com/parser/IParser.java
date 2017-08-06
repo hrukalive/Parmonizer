@@ -1,13 +1,10 @@
 package com.parser;
 
+import com.base.Tuple;
+
 /**
  * Created by NyLP on 7/12/17.
  */
-
-interface IParserExp<T>
-{
-    T eval();
-}
 
 public interface IParser<T>
 {

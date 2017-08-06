@@ -2,10 +2,8 @@ package com.validation;
 
 import com.base.Chord;
 import com.base.Note;
-import com.base.NoteCluster;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Scorer to evaluate the 'quality' of a chord configuration.
@@ -15,30 +13,29 @@ import java.util.Iterator;
 
 public final class ChordScorer
 {
-    private final int[] repeatPenalty;
-    private final int[] omitPenalty;
-    private final int[] unisonPenalty;
+    private final ArrayList<Integer> repeatPenalty;
+    private final ArrayList<Integer> omitPenalty;
+    private final ArrayList<Integer> unisonPenalty;
 
-    public ChordScorer(int[] repeatPenalty, int[] omitPenalty, int[] unisonPenalty)
+    public ChordScorer(ArrayList<Integer> repeatPenalty, ArrayList<Integer> omitPenalty, ArrayList<Integer> unisonPenalty)
     {
         this.repeatPenalty = repeatPenalty;
         this.omitPenalty = omitPenalty;
         this.unisonPenalty = unisonPenalty;
     }
 
-    public int score(Chord.ChordRealization chordRealization, Chord parent)
+    public int score(ArrayList<Note> chordRealization, Chord parent)
     {
-        ArrayList<Note> chordNotes = chordRealization.getNotes();
         int loss = 0;
 
-        ArrayList<Note> chord = parent.getNoteSet();
-        int[] counter = new int[chord.size()];
+        ArrayList<Note> chordTones = parent.getNoteSet();
+        int[] counter = new int[chordTones.size()];
 
-        for (int i = 0; i < chord.size(); i++)
+        for (int i = 0; i < chordTones.size(); i++)
         {
             boolean existFlag = false;
-            Note notOmitNote = chord.get(i);
-            for (Note note : chordNotes)
+            Note notOmitNote = chordTones.get(i);
+            for (Note note : chordRealization)
             {
                 if (note.isEnharmonicNoClass(notOmitNote))
                 {
@@ -47,14 +44,14 @@ public final class ChordScorer
                 }
             }
             if (!existFlag)
-                loss += omitPenalty[i];
+                loss += omitPenalty.get(i);
         }
 
-        for (Note note : chordNotes)
+        for (Note note : chordRealization)
         {
-            for (int i = 0; i < chord.size(); i++)
+            for (int i = 0; i < chordTones.size(); i++)
             {
-                if (note.isEnharmonicNoClass(chord.get(i)))
+                if (note.isEnharmonicNoClass(chordTones.get(i)))
                 {
                     counter[i]++;
                     break;
@@ -62,13 +59,13 @@ public final class ChordScorer
             }
         }
         for (int i = 0; i < counter.length; i++)
-            loss += counter[i] * repeatPenalty[i];
+            loss += counter[i] * repeatPenalty.get(i);
 
-        for (int i = 0; i < chordNotes.size() - 1; i++)
+        for (int i = 0; i < chordRealization.size() - 1; i++)
         {
-            if (chordNotes.get(i + 1).getCode() == chordNotes.get(i).getCode())
-                loss += unisonPenalty[i];
-            if (chordNotes.get(i).dist(chordNotes.get(i + 1)) < 3)
+            if (chordRealization.get(i + 1).getCode() == chordRealization.get(i).getCode())
+                loss += unisonPenalty.get(i);
+            if (chordRealization.get(i).dist(chordRealization.get(i + 1)) < 3)
                 loss += i * 100;
         }
 

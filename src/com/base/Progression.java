@@ -1,7 +1,5 @@
 package com.base;
 
-import com.validation.ChordScorer;
-import com.validation.ChordValidator;
 import com.validation.VoiceLeadingScorer;
 import com.validation.VoiceLeadingValidator;
 
@@ -11,8 +9,6 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Synthesizer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Collection of chords so that under certain restraints, progression
@@ -25,14 +21,14 @@ public class Progression
 {
     public class VoiceLeading implements Comparable<VoiceLeading>
     {
-        private ArrayList<NoteCluster> piece;
+        private ArrayList<Chord.NoteCluster> piece;
         private int loss = 0;
 
         public VoiceLeading() { piece = new ArrayList<>(); }
         public VoiceLeading(VoiceLeading vl) { piece = new ArrayList<>(vl.piece); loss = vl.loss; }
 
-        public void addChord(NoteCluster notes) { piece.add(notes); }
-        public VoiceLeading addChordNew(NoteCluster notes)
+        public void addChord(Chord.NoteCluster notes) { piece.add(notes); }
+        public VoiceLeading addChordNew(Chord.NoteCluster notes)
         {
             VoiceLeading ret = new VoiceLeading(this);
             ret.addChord(notes);
@@ -49,12 +45,12 @@ public class Progression
             this.loss = loss;
         }
 
-        public ArrayList<NoteCluster> getPiece()
+        public ArrayList<Chord.NoteCluster> getPiece()
         {
             return piece;
         }
 
-        public NoteCluster lastChord() { return piece.get(piece.size() - 1); }
+        public Chord.NoteCluster lastChord() { return piece.get(piece.size() - 1); }
 
         public void play()
         {
@@ -72,12 +68,12 @@ public class Progression
                 System.exit(1);
             }
 //            for (Instrument inst : synth.getAvailableInstruments())
-//                System.out.println(inst.toString());
+//                System.out.println(inst._toString());
             MidiChannel[] channels = synth.getChannels();
             MidiChannel	channel = channels[0];
             channel.programChange(48);
 
-            for (NoteCluster nc : piece)
+            for (Chord.NoteCluster nc : piece)
             {
                 for (Note n : nc.getNotes())
                 {
@@ -85,7 +81,7 @@ public class Progression
                 }
                 try
                 {
-                    Thread.sleep(1500);
+                    Thread.sleep(1000);
                 }
                 catch (InterruptedException e)
                 {
@@ -95,7 +91,7 @@ public class Progression
             synth.close();
             try
             {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             }
             catch (InterruptedException e)
             {
@@ -123,52 +119,13 @@ public class Progression
     }
 
     private ArrayList<Chord> progression = new ArrayList<>();
-    private ArrayList<HashMap<Integer, Note>> fixedClass = new ArrayList<>();
-    private ArrayList<HashMap<Integer, Note>> insistList = new ArrayList<>();
     private ArrayList<VoiceLeading> collection = new ArrayList<>();
 
     public void addHarmony(Chord chord)
     { 
-        progression.add(new Chord.Builder(chord).build());
-        fixedClass.add(new HashMap<>());
-        insistList.add(new HashMap<>());
+        progression.add(new Chord(chord));
     }
-    public void fixNoteClass(int chord, int voice, Note note)
-    {
-        for (Note n : (ArrayList<Note>)progression.get(chord - 1).getNoteSet())
-        {
-            if (n.isEnharmonicNoClass(note))
-            {
-                HashMap<Integer, Note> fixedList = fixedClass.get(chord - 1);
-                if (fixedList.containsKey(voice))
-                    fixedList.replace(voice, Note.build(note));
-                else
-                    fixedList.put(voice, Note.build(note));
-            }
-        }
-    }
-    public void insist(int chord, int voice, Note note)
-    {
-        fixNoteClass(chord, voice, note);
-        HashMap<Integer, Note> lst = insistList.get(chord - 1);
-        if (lst.containsKey(voice))
-            lst.replace(voice, Note.build(note));
-        else
-            lst.put(voice, Note.build(note));
-    }
-    
-    private boolean checkFixedNoteClass(NoteCluster nc, int num)
-    {
-        HashMap<Integer, Note> fixedList = fixedClass.get(num);
-        ArrayList<Note> chordNotes = nc.getNotes();
-        for (Map.Entry<Integer, Note> entry : fixedList.entrySet())
-        {
-            if (!chordNotes.get(entry.getKey() - 1).isEnharmonicNoClass(entry.getValue()))
-                return false;
-        }
-        return true;
-    }
-    
+
     public void yield()
     {
         collection.clear();
@@ -184,14 +141,11 @@ public class Progression
         else if (num < progression.size())
         {
             Chord harmony = progression.get(num);
-            harmony.setInsistList(insistList.get(num));
             harmony.yield();
-            ArrayList<Chord.ChordRealization> crs = harmony.getRealizations();
+            ArrayList<Chord.NoteCluster> crs = harmony.getRealizations();
             for (int i = 0; i < crs.size(); i++)
             {
-                Chord.ChordRealization cr = crs.get(i);
-                if (!checkFixedNoteClass(cr, num))
-                    continue;
+                Chord.NoteCluster cr = crs.get(i);
 
                 if (num == 0)
                 {
@@ -202,12 +156,17 @@ public class Progression
                 }
                 else
                 {
-                    if (VoiceLeadingValidator.validate(vl.lastChord(), cr))
+                    VoiceLeadingValidator.VoiceLeadingValidationResult result = VoiceLeadingValidator.validate(vl.lastChord(), cr);
+                    if (result.equals(VoiceLeadingValidator.VoiceLeadingValidationResult.SUCCESS))
                     {
                         VoiceLeading vln = vl.addChordNew(cr);
                         vln.setLoss(vl.getLoss() + VoiceLeadingScorer.score(vl.lastChord(), cr) + cr.getLoss());
                         yieldHelper(num + 1, vln);
                     }
+//                    else
+//                    {
+//                        System.err.println(result.name());
+//                    }
                 }
             }
         }
