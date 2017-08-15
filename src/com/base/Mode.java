@@ -12,42 +12,27 @@ import java.util.ArrayList;
 public class Mode
 {
     private String name = "";
+    private Note generator;
+    private Interval tonic_distance;
+    private Interval.Dir dir = Interval.Dir.Above;
     private ArrayList<Note> scale_tones = new ArrayList<>();
-    private ArrayList<Note> neg_scale_tones = new ArrayList<>();
 
-    public Mode(Note root, ArrayList<Interval> intervalSteps, Interval.Dir dir, boolean hasNeg, Interval negIntv)
+    public Mode(String name, Note generator, Interval tonic_distance, ArrayList<Interval> intervalSteps, ArrayList<Interval> alterations)
     {
-//        this.scale_tones = new ArrayList<>();
-//
-//        scale_tones.add(NoteStruct.build(root));
-//        NoteStruct tempnote = root;
-//        for (int i = 0; i < intervalSteps.size() - 1; i++)
-//        {
-//            tempnote = tempnote.intervalAbove(intervalSteps.get(i));
-//            scale_tones.add(tempnote);
-//        }
-//
-//        if (hasNeg)
-//        {
-//            neg_scale_tones = new ArrayList<>();
-//            neg_gen = neg_gen.intervalAbove(Interval.P8);
-//            neg_scale_tones.add(NoteStruct.build(neg_gen));
-//            tempnote = neg_gen;
-//            for (int i = 0; i < intervalSteps.size() - 1; i++)
-//            {
-//                tempnote = tempnote.intervalBelow(intervalSteps.get(i));
-//                neg_scale_tones.add(tempnote);
-//            }
-//        }
-//        else
-//            neg_scale_tones = null;
+        this.name = name;
+        this.generator = generator;
+        this.tonic_distance = tonic_distance;
+        this.dir = intervalSteps.get(0).dir();
+        if (alterations != null && intervalSteps.size() != alterations.size())
+            throw new IllegalArgumentException("Mode creation failed due to illegal parameters.");
+        
+        
     }
 
     public Mode(Mode mode)
     {
         this.name = mode.name;
         mode.scale_tones.forEach(note -> this.scale_tones.add(Note.build(note)));
-        mode.neg_scale_tones.forEach(note -> this.neg_scale_tones.add(Note.build(note)));
     }
 
     public void setName(String name)
@@ -58,5 +43,15 @@ public class Mode
     public String getName()
     {
         return name;
+    }
+
+    public Interval.Dir getDir()
+    {
+        return dir;
+    }
+
+    public Note getScaleTone(int degree)
+    {
+        return scale_tones.get((degree - 1) % scale_tones.size());
     }
 }
