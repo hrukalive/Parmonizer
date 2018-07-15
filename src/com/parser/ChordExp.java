@@ -1,6 +1,9 @@
 package com.parser;
 
-import com.base.Chord;
+import com.base.chord.Chord;
+import com.base.chord.ChordNote;
+import com.base.progression.VoiceConfig;
+import com.base.realization.ChordVoicing;
 
 import java.util.ArrayList;
 
@@ -8,14 +11,14 @@ import java.util.ArrayList;
  * Created by NyLP on 7/16/17.
  */
 
-public class ChordExp implements IParserExp<Chord>
+public class ChordExp implements IParserExp<ChordVoicing>
 {
-    private final Chord chord;
-    public ChordExp(ArrayList<Chord.ChordNoteConfig> noteList, ArrayList<Chord.VoiceConfig> voiceList)
+    private final ChordVoicing chord;
+    public ChordExp(ArrayList<ChordNote> noteList, ArrayList<VoiceConfig> voiceList)
     {
-        chord = new Chord(noteList, voiceList);
+        chord = new ChordVoicing(new Chord(noteList), voiceList);
     }
-    @Override public Chord eval()
+    @Override public ChordVoicing eval()
     {
         return chord;
     }

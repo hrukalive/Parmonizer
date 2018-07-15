@@ -33,13 +33,13 @@ public class DiatonicScale extends Scale
 //            {
 //            case 1:
 //                if (inv < 2)
-//                    return new ChordBuilder(3, voice).chord(triads.get(num - 1).inversion(inv));
+//                    return new ChordBuilder(3, voice).chord(triads.parse(num - 1).inversion(inv));
 //                else
 //                    return new ChordBuilder()
 //                            .omitability(3, false)
 //                            .repeatPenalty(1, 500)
 //                            .repeatPenalty(3, 50)
-//                            .chord(triads.get(num - 1)
+//                            .chord(triads.parse(num - 1)
 //                                           .tendency(1, NoteStruct.Dir.Below, Interval.m2)
 //                                           .tendency(1, NoteStruct.Dir.Below, Interval.M2)
 //                                           .tendency(2, NoteStruct.Dir.Below, Interval.m2)
@@ -50,7 +50,7 @@ public class DiatonicScale extends Scale
 //                {
 //                    return new ChordBuilder()
 //                            .omitability(3, false)
-//                            .chord(triads.get(num - 1).inversion(inv));
+//                            .chord(triads.parse(num - 1).inversion(inv));
 //                }
 //                else
 //                {
@@ -59,7 +59,7 @@ public class DiatonicScale extends Scale
 //                            .repeatPenalty(1, 500)
 //                            .repeatPenalty(2, 50)
 //                            .repeatPenalty(3, 1000)
-//                            .chord(triads.get(num - 1).inversion(inv));
+//                            .chord(triads.parse(num - 1).inversion(inv));
 //                }
 //
 //            case 3:
@@ -67,19 +67,19 @@ public class DiatonicScale extends Scale
 //                        .omitability(3, false)
 //                        .repeatPenalty(1, 200)
 //                        .repeatPenalty(2, 50)
-//                        .chord(triads.get(num - 1).inversion(inv));
+//                        .chord(triads.parse(num - 1).inversion(inv));
 //
 //            case 4:
 //                return new ChordBuilder()
 //                        .omitability(3, false)
-//                        .chord(triads.get(num - 1).inversion(inv));
+//                        .chord(triads.parse(num - 1).inversion(inv));
 //
 //            case 5:
 //                return new ChordBuilder()
 //                        .repeatability(2, false)
 //                        .omitPenalty(3, 1000)
 //                        .unisonPenalty(1, 500)
-//                        .chord(triads.get(num - 1)
+//                        .chord(triads.parse(num - 1)
 //                                       .tendency(2, NoteStruct.Dir.Above, Interval.m2)
 //                                       .tendency(2, NoteStruct.Dir.Below, Interval.M3)
 //                                       .inversion(inv));
@@ -88,7 +88,7 @@ public class DiatonicScale extends Scale
 //                return new ChordBuilder()
 //                        .omitability(3, false)
 //                        .repeatPenalty(2, 100)
-//                        .chord(triads.get(num - 1).inversion(inv));
+//                        .chord(triads.parse(num - 1).inversion(inv));
 //
 //            case 7:
 //                if (inv != 1)
@@ -96,7 +96,7 @@ public class DiatonicScale extends Scale
 //                    return new ChordBuilder()
 //                            .repeatability(1, false)
 //                            .omitability(3, false)
-//                            .chord(triads.get(num - 1).inversion(inv));
+//                            .chord(triads.parse(num - 1).inversion(inv));
 //                }
 //                else
 //                {
@@ -106,10 +106,10 @@ public class DiatonicScale extends Scale
 //                            .repeatPenalty(1, 500)
 //                            .repeatPenalty(2, 50)
 //                            .repeatPenalty(3, 1000)
-//                            .chord(triads.get(num - 1).inversion(inv));
+//                            .chord(triads.parse(num - 1).inversion(inv));
 //                }
 //            default:
-//                return new ChordBuilder(3, voice).chord(triads.get(num));
+//                return new ChordBuilder(3, voice).chord(triads.parse(num));
 //            }
 //        }
 //
@@ -127,7 +127,7 @@ public class DiatonicScale extends Scale
 //                cb = new ChordBuilder(4, 4)
 //                        .omitPenalty(3, 500)
 //                        .unisonPenalty(1, 500)
-//                        .chord(sevenths.get(num - 1)
+//                        .chord(sevenths.parse(num - 1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.P1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.m2)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.M2)
@@ -141,7 +141,7 @@ public class DiatonicScale extends Scale
 //                cb = new ChordBuilder(4, 4)
 //                        .omitPenalty(3, 500)
 //                        .unisonPenalty(1, 500)
-//                        .chord(sevenths.get(num - 1)
+//                        .chord(sevenths.parse(num - 1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.P1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.m2)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.M2)
@@ -156,7 +156,7 @@ public class DiatonicScale extends Scale
 //                        .repeatability(2, false)
 //                        .omitPenalty(3, 500)
 //                        .unisonPenalty(1, 500)
-//                        .chord(sevenths.get(num - 1)
+//                        .chord(sevenths.parse(num - 1)
 //                                       .tendency(2, NoteStruct.Dir.Above, Interval.m2)
 //                                       .altTendency(2, NoteStruct.Dir.Below, Interval.M3)
 //                                       .tendency(4, NoteStruct.Dir.Below, Interval.m2)
@@ -167,7 +167,7 @@ public class DiatonicScale extends Scale
 //                        .repeatability(1, false)
 //                        .omitPenalty(3, 500)
 //                        .unisonPenalty(1, 500)
-//                        .chord(sevenths.get(num - 1)
+//                        .chord(sevenths.parse(num - 1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.P1)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.m2)
 //                                       .preparedBy(4, NoteStruct.Dir.Above, Interval.M2)
@@ -180,7 +180,7 @@ public class DiatonicScale extends Scale
 //                                       .tendency(4, NoteStruct.Dir.Below, Interval.m2)
 //                                       .inversion(inv));
 //            default:
-//                return new ChordBuilder(4, voice).chord(sevenths.get(num - 1));
+//                return new ChordBuilder(4, voice).chord(sevenths.parse(num - 1));
 //            }
 //        }
 //    }
@@ -191,13 +191,13 @@ public class DiatonicScale extends Scale
         super(root, null);
     }
 //
-//    @Override protected void get()
+//    @Override protected void parse()
 //    {
 //        NoteStruct temproot = root;
 //        for (int i = 0; i < intervalSteps.length; i++)
 //        {
 //            ArrayList<NoteStruct> temptones = new ArrayList<>();
-//            temptones.add(NoteStruct.get(temproot));
+//            temptones.add(NoteStruct.parse(temproot));
 //            NoteStruct tempnote = temproot;
 //            for (int j = 0; j < intervalSteps.length - 1; j++)
 //            {
@@ -222,13 +222,13 @@ public class DiatonicScale extends Scale
 //            {
 //                DiatonicMode mode = new DiatonicMode(temptones);
 //                mode.triads.remove(4);
-//                mode.triads.add(4, new Chord.Builder(temptones.get(4), ChordStructure.M.ctor()));
+//                mode.triads.add(4, new Chord.Builder(temptones.parse(4), ChordStructure.M.ctor()));
 //                mode.triads.remove(6);
-//                mode.triads.add(6, new Chord.Builder(temptones.get(5).intervalAbove(Interval.a2), ChordStructure.dim.ctor()));
+//                mode.triads.add(6, new Chord.Builder(temptones.parse(5).intervalAbove(Interval.a2), ChordStructure.dim.ctor()));
 //                mode.sevenths.remove(4);
-//                mode.sevenths.add(4, new Chord.Builder(temptones.get(4), ChordStructure.Mm7.ctor()));
+//                mode.sevenths.add(4, new Chord.Builder(temptones.parse(4), ChordStructure.Mm7.ctor()));
 //                mode.sevenths.remove(6);
-//                mode.sevenths.add(6, new Chord.Builder(temptones.get(5).intervalAbove(Interval.a2), ChordStructure.oo7.ctor()));
+//                mode.sevenths.add(6, new Chord.Builder(temptones.parse(5).intervalAbove(Interval.a2), ChordStructure.oo7.ctor()));
 //                modes.put("HarmonicMinor", mode);
 //            }
 //        }

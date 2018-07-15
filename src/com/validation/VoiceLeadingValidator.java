@@ -1,8 +1,8 @@
 package com.validation;
 
-import com.base.Chord;
-import com.base.Note;
 import com.base.Interval;
+import com.base.realization.ChordVoicing.NoteCluster;
+import com.base.progression.VoiceNote;
 
 import java.util.ArrayList;
 
@@ -16,10 +16,10 @@ public class VoiceLeadingValidator
 {
     public enum VoiceLeadingValidationResult
     { SUCCESS, VOICE_OVERLAP, LARGE_LEAP, AUG_DIM_INTERVAL, TENDENCY_NOT_RESOLVED, PARALLEL_PERFECT_INTERVAL, CONTRARY_PERFECTION_INTERVAL, NOT_PREPARED }
-    public static VoiceLeadingValidationResult validate(Chord.NoteCluster nc1, Chord.NoteCluster nc2)
+    public static VoiceLeadingValidationResult validate(NoteCluster nc1, NoteCluster nc2)
     {
-        ArrayList<Note> nc1n = nc1.getNotes();
-        ArrayList<Note> nc2n = nc2.getNotes();
+        ArrayList<VoiceNote> nc1n = nc1.getNotes();
+        ArrayList<VoiceNote> nc2n = nc2.getNotes();
 
         for (int i = 0; i < nc1n.size(); i++)
         {

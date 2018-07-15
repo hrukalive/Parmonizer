@@ -35,7 +35,7 @@ public class Scale
 //            NoteStruct tempnote = temproot;
 //            for (int j = 0; j < intervalSteps.size() - 1; j++)
 //            {
-//                tempnote = tempnote.intervalAbove(intervalSteps.get((i + j) % intervalSteps.size()));
+//                tempnote = tempnote.intervalAbove(intervalSteps.parse((i + j) % intervalSteps.size()));
 //                temptones.add(tempnote);
 //            }
 //            modes.put(i + "", new Mode(temptones));

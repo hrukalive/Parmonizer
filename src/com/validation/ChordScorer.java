@@ -1,7 +1,9 @@
 package com.validation;
 
-import com.base.Chord;
+import com.base.chord.Chord;
 import com.base.Note;
+import com.base.progression.VoiceNote;
+import com.base.realization.ChordVoicing;
 
 import java.util.ArrayList;
 
@@ -24,7 +26,7 @@ public final class ChordScorer
         this.unisonPenalty = unisonPenalty;
     }
 
-    public int score(ArrayList<Note> chordRealization, Chord parent)
+    public int score(ArrayList<VoiceNote> chordRealization, ChordVoicing parent)
     {
         int loss = 0;
 
@@ -35,7 +37,7 @@ public final class ChordScorer
         {
             boolean existFlag = false;
             Note notOmitNote = chordTones.get(i);
-            for (Note note : chordRealization)
+            for (VoiceNote note : chordRealization)
             {
                 if (note.isEnharmonicNoClass(notOmitNote))
                 {
@@ -47,7 +49,7 @@ public final class ChordScorer
                 loss += omitPenalty.get(i);
         }
 
-        for (Note note : chordRealization)
+        for (VoiceNote note : chordRealization)
         {
             for (int i = 0; i < chordTones.size(); i++)
             {

@@ -1,6 +1,4 @@
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
 
 /**
  * Created by NyLP on 8/3/17.

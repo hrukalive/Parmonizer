@@ -1,8 +1,9 @@
 package com.validation;
 
-import com.base.Chord;
 import com.base.Note;
 import com.base.Interval;
+import com.base.realization.ChordVoicing.NoteCluster;
+import com.base.progression.VoiceNote;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +16,10 @@ import java.util.HashMap;
 
 public class VoiceLeadingScorer
 {
-    public static int score(Chord.NoteCluster nc1, Chord.NoteCluster nc2)
+    public static int score(NoteCluster nc1, NoteCluster nc2)
     {
-        ArrayList<Note> nc1n = nc1.getNotes();
-        ArrayList<Note> nc2n = nc2.getNotes();
+        ArrayList<VoiceNote> nc1n = nc1.getNotes();
+        ArrayList<VoiceNote> nc2n = nc2.getNotes();
         int accum = 0;
         
         accum += 1000 * Math.abs(nc1n.get(0).dist(nc2n.get(0)));

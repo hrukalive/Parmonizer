@@ -1,11 +1,13 @@
 package com.parser;
 
-import com.base.Chord;
+import com.base.chord.Chord;
 import com.base.Tuple;
 import com.base.Note;
-import com.base.Chord.ChordNoteConfig;
-import com.base.Chord.VoiceConfig;
+import com.base.chord.ChordNote;
+import com.base.progression.VoiceConfig;
 import com.base.Interval;
+import com.base.progression.VoiceNote;
+import com.base.realization.ChordVoicing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +31,7 @@ import java.util.regex.Pattern;
  * Created by NyLP on 7/16/17.
  */
 
-public class ChordExpParser implements IParser<Chord>
+public class ChordExpParser implements IParser<ChordVoicing>
 {
     @Override public ChordExp parse(String expr)
     {
@@ -57,7 +59,7 @@ public class ChordExpParser implements IParser<Chord>
         Matcher matcher_fixClasses = pattern_fixClass.matcher(expr);
         Matcher matcher_insistNotes = pattern_insistNote.matcher(expr);
 
-        ArrayList<ChordNoteConfig> noteList = new ArrayList<>();
+        ArrayList<ChordNote> noteList = new ArrayList<>();
         Note inv_bass = null;
         Note int_bass = null;
         
@@ -93,15 +95,15 @@ public class ChordExpParser implements IParser<Chord>
                             throw new IllegalArgumentException("Missing penalty value for omissible notes.");
                     }
                     
-                    Note note = null;
+                    VoiceNote note = null;
                     if (noteStrs.get(i).startsWith("*"))
                     {
                         inv_bass = Note.parse(noteStrs.get(i).substring(1));
-                        note = Note.build(inv_bass);
+                        note = new VoiceNote(inv_bass);
                     }
                     else
-                        note = Note.parse(noteStrs.get(i));
-                    noteList.add(new ChordNoteConfig(note, new Tuple<>(repeatability, repeatPenalty), new Tuple<>(omissibility, omitPenalty)));
+                        note = new VoiceNote(Note.parse(noteStrs.get(i)));
+                    noteList.add(new ChordNote(note, new Tuple<>(repeatability, repeatPenalty), new Tuple<>(omissibility, omitPenalty)));
                 }
             }
             else
@@ -268,21 +270,21 @@ public class ChordExpParser implements IParser<Chord>
                             if (voice >= voices)
                                 throw new IllegalArgumentException("Specified fixed class must be one of the voice.");
                             
-                            Note fixNoteClass = Note.parse(matcher_fixClass.group(2));
+                            VoiceNote fixNoteClass = new VoiceNote(Note.parse(matcher_fixClass.group(2)));
                             
-                            ChordNoteConfig nc = null;
-                            for (ChordNoteConfig cnc : noteList)
+                            ChordNote nc = null;
+                            for (ChordNote cnc : noteList)
                             {
                                 if (cnc.getNote().isEnharmonicNoClass(fixNoteClass))
                                 {
-                                    nc = new ChordNoteConfig(cnc);
+                                    nc = new ChordNote(cnc);
                                     break;
                                 }
                             }
                             if (voice == 0)
                             {
                                 if (nc == null)
-                                    nc = new ChordNoteConfig(fixNoteClass, null, null);
+                                    nc = new ChordNote(fixNoteClass, null, null);
                                 else
                                 {
                                     nc.getPrepareList().clear();
@@ -311,7 +313,7 @@ public class ChordExpParser implements IParser<Chord>
                             int voice = Integer.parseInt(matcher_insistNote.group(1)) - 1;
                             if (voice >= voices)
                                 throw new IllegalArgumentException("Specified insisted note must be one of the voice.");
-                            voiceList.get(voice).setInsistNote(Note.parse(matcher_insistNote.group(2)));
+                            voiceList.get(voice).setInsistNote(new VoiceNote(Note.parse(matcher_insistNote.group(2))));
                         }
                     });
         }

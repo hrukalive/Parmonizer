@@ -1,7 +1,9 @@
 package com.validation;
 
-import com.base.Chord;
+import com.base.chord.Chord;
 import com.base.Note;
+import com.base.progression.VoiceNote;
+import com.base.realization.ChordVoicing;
 
 import java.util.ArrayList;
 
@@ -21,7 +23,7 @@ public final class ChordValidator
         this.omissibility = omissibility;
     }
 
-    public boolean validate(ArrayList<Note> chordRealization, Chord parent)
+    public boolean validate(ArrayList<VoiceNote> chordRealization, ChordVoicing parent)
     {
         for (int i = 1; i < chordRealization.size() - 1; i++)
         {

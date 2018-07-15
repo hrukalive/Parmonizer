@@ -15,48 +15,24 @@ import java.util.regex.Pattern;
 
 public class Note implements Comparable<Note>
 {
-    private final int _noteCode;
-    private final int _octave;
-    private final int _alteration;
-    private boolean insisted;
-    private final ArrayList<Note> tendency;
-    private final ArrayList<Note> altTendency;
-    private final HashMap<Note, Integer> bonusMap;
-    private final ArrayList<Note> prepareReq;
+    protected final int _noteCode;
+    protected final int _octave;
+    protected final int _alteration;
 
-    private Note(Note note)
+    public Note(int noteCode, int octave, int alteration)
+    {
+        if (noteCode < 0 || noteCode > 6 || alteration < -2 || alteration > 2)
+            throw new IllegalArgumentException("Specified parameters is wrong.");
+        this._noteCode = noteCode;
+        this._octave = octave;
+        this._alteration = alteration;
+    }
+
+    public Note(Note note)
     {
         this._noteCode = note._noteCode;
         this._octave = note._octave;
         this._alteration = note._alteration;
-        this.insisted = note.insisted;
-        this.tendency = new ArrayList<>(note.tendency);
-        this.altTendency = new ArrayList<>(note.altTendency);
-        this.bonusMap = new HashMap<>(note.bonusMap);
-        this.prepareReq = new ArrayList<>(note.prepareReq);
-    }
-    private Note(int noteCode, int octave, int alteration)
-    {
-        this._noteCode = noteCode;
-        this._octave = octave;
-        this._alteration = alteration;
-        this.insisted = false;
-        this.tendency = new ArrayList<>();
-        this.altTendency = new ArrayList<>();
-        this.bonusMap = new HashMap<>();
-        this.prepareReq = new ArrayList<>();
-    }
-
-    public static Note build(Note note)
-    {
-        return new Note(note);
-    }
-    
-    public static Note build(int noteCode, int octave, int alteration)
-    {
-        if (noteCode < 0 || noteCode > 6 || alteration < -2 || alteration > 2)
-            throw new IllegalArgumentException("Specified parameters is wrong.");
-        return new Note(noteCode, octave, alteration);
     }
     
     public static Note parse(String noteName)
@@ -94,11 +70,6 @@ public class Note implements Comparable<Note>
     
     public int dist(Note note) { return note.getCode() - this.getCode(); }
     
-    public int distNoAlt(Note note)
-    {
-        return dist(note) - note._alteration;
-    }
-    
     public Interval interval(Note note)
     {
         if (compareTo(note) > 0)
@@ -107,7 +78,8 @@ public class Note implements Comparable<Note>
         while (_dist(_noteCode, 0, _alteration, note._noteCode, that_octave, note._alteration) > 12)
             that_octave--;
         int diff = note._noteCode - this._noteCode;
-        return Interval.get((diff <= 0 ? (diff + that_octave * 7) : diff) + 1, _dist(_noteCode, 0, _alteration, note._noteCode, that_octave, note._alteration));
+        return Interval.parse((diff <= 0 ? (diff + that_octave * 7) : diff) + 1,
+                _dist(_noteCode, 0, _alteration, note._noteCode, that_octave, note._alteration));
     }
     
     public Note interval(Interval intv)
@@ -118,46 +90,10 @@ public class Note implements Comparable<Note>
             return _intervalBelow(intv);
     }
 
-    public ArrayList<Note> allInRange(Note lo, Note hi)
-    {
-        ArrayList<Note> ret = new ArrayList<>();
-        int temp_octave = 0;
-        while (lo._compareTo(_noteCode, temp_octave, _alteration) > 0) temp_octave++;
-        while (hi._compareTo(_noteCode, temp_octave, _alteration) >= 0)
-        {
-            ret.add(new Note(_noteCode, temp_octave, _alteration));
-            temp_octave++;
-        }
-        return ret;
-    }
-
     public int getCode()
     {
         return _getCode(_noteCode, _octave, _alteration);
     }
-
-    public void setInsisted()
-    {
-        this.insisted = true;
-    }
-
-    public void addTendency(Note note) { tendency.add(note); }
-
-    public void addAltTendency(Note note) { altTendency.add(note); }
-
-    public void addBonus(Note note, int value) { bonusMap.put(note, value); }
-
-    public void addPrepare(Note note) { prepareReq.add(note); }
-
-    public boolean isInsisted() { return insisted; }
-
-    public ArrayList<Note> getTendencies() { return tendency; }
-
-    public ArrayList<Note> getAltTendency() { return altTendency; }
-
-    public HashMap<Note, Integer> getBonus() { return bonusMap; }
-
-    public ArrayList<Note> getPrepare() { return prepareReq; }
     
     public boolean isEnharmonic(Note o)
     {
@@ -194,38 +130,9 @@ public class Note implements Comparable<Note>
         return interval(note).isMinor();
     }
 
-
-    
-    @Override public int hashCode()
-    {
-        return Integer.hashCode(getCode());
-    }
-
-    @Override public String toString()
-    {
-        return _toString(true);
-    }
-
-    @Override public boolean equals(Object obj)
-    {
-        return (obj instanceof Note) &&
-                ((Note)obj)._noteCode == this._noteCode &&
-                ((Note)obj)._octave == this._octave &&
-                ((Note)obj)._alteration == this._alteration;
-    }
-    
-    @Override public int compareTo(Note o)
-    {
-        if (o == null) throw new NullPointerException("Null NoteStruct to compare");
-        if (getCode() < o.getCode()) return -1;
-        if (getCode() > o.getCode()) return 1;
-        return 0;
-    }
-
-
     private Note _intervalAbove(Interval intv)
     {
-        int temp_noteCode = _noteCode + intv.degree();
+        int temp_noteCode = _noteCode + (intv.degree() - 1);
         int temp_octave = _octave + temp_noteCode / 7;
         temp_noteCode %= 7;
         int temp_alteration = intv.semitones() - (_getCode(temp_noteCode, temp_octave, 0) - this.getCode());
@@ -235,7 +142,7 @@ public class Note implements Comparable<Note>
     private Note _intervalBelow(Interval intv)
     {
         Interval intv_inv = intv.invert();
-        int temp_noteCode = _noteCode + intv_inv.degree();
+        int temp_noteCode = _noteCode + (intv_inv.degree() - 1);
         int temp_octave = _octave + temp_noteCode / 7;
         temp_noteCode %= 7;
         int temp_alteration = intv_inv.semitones() - (_getCode(temp_noteCode, temp_octave, 0) - this.getCode());
@@ -244,9 +151,11 @@ public class Note implements Comparable<Note>
     
     private static int _dist(int this_noteCode, int this_octave, int this_alteration, 
                             int that_noteCode, int that_octave, int that_alteration)
-    { return _getCode(that_noteCode, that_octave, that_alteration) - _getCode(this_noteCode, this_octave, this_alteration); }
+    {
+        return _getCode(that_noteCode, that_octave, that_alteration) - _getCode(this_noteCode, this_octave, this_alteration);
+    }
     
-    private static int _getCode(int noteCode, int octave, int alteration)
+    protected static int _getCode(int noteCode, int octave, int alteration)
     {
         int ret = 0;
         switch (noteCode)
@@ -288,10 +197,30 @@ public class Note implements Comparable<Note>
         return ret + (includeOct ? _octave : "");
     }
 
-    private int _compareTo(int noteCode, int octave, int alteration)
+    @Override public int hashCode()
     {
-        if (getCode() < _getCode(noteCode, octave, alteration)) return -1;
-        if (getCode() > _getCode(noteCode, octave, alteration)) return 1;
+        return Integer.hashCode(getCode());
+    }
+
+    @Override public String toString()
+    {
+        return _toString(true);
+    }
+
+    @Override public boolean equals(Object obj)
+    {
+        return (obj instanceof Note) &&
+                ((Note)obj)._noteCode == this._noteCode &&
+                ((Note)obj)._octave == this._octave &&
+                ((Note)obj)._alteration == this._alteration;
+    }
+
+    @Override public int compareTo(Note o)
+    {
+        if (o == null) throw new NullPointerException("Null NoteStruct to compare");
+        if (getCode() < o.getCode()) return -1;
+        if (getCode() > o.getCode()) return 1;
         return 0;
     }
 }
+

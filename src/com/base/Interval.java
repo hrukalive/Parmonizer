@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 
 public final class Interval
 {
+    /**
+     * Interval direction and quality enum
+     */
     public enum Dir
     {
         Above, Below;
@@ -21,105 +24,109 @@ public final class Interval
         {
             if (this == Above)
                 return Below;
-            else if (this == Below)
+            else
                 return Above;
-            return null;
+        }
+
+        @Override
+        public String toString() {
+            if (this == Above)
+                return "+";
+            else
+                return "-";
         }
     }
 
-    private enum _Type
+    private enum Quality
     {
-        Dim, Min, Maj, Aug, Per
-    }
-    
-    private enum _Interval
-    {
-        P1(new Interval("P1", 1, 0, _Type.Per)),
-        A1(new Interval("A1", 1, 1, _Type.Aug)),
+        Dim, Min, Maj, Aug, Per;
 
-        d2(new Interval("d2", 2, 0, _Type.Dim)),
-        m2(new Interval("m2", 2, 1, _Type.Min)),
-        M2(new Interval("M2", 2, 2, _Type.Maj)),
-        A2(new Interval("A2", 2, 3, _Type.Aug)),
-        
-        d3(new Interval("d3", 3, 2, _Type.Dim)),
-        m3(new Interval("m3", 3, 3, _Type.Min)),
-        M3(new Interval("M3", 3, 4, _Type.Maj)),
-        A3(new Interval("A3", 3, 5, _Type.Aug)),
-        
-        d4(new Interval("d4", 4, 4, _Type.Dim)),
-        P4(new Interval("P4", 4, 5, _Type.Per)),
-        A4(new Interval("A4", 4, 6, _Type.Aug)),
-        
-        d5(new Interval("d5", 5, 6, _Type.Dim)),
-        P5(new Interval("P5", 5, 7, _Type.Per)),
-        A5(new Interval("A5", 5, 8, _Type.Aug)),
-        
-        d6(new Interval("d6", 6, 7, _Type.Dim)),
-        m6(new Interval("m6", 6, 8, _Type.Min)),
-        M6(new Interval("M6", 6, 9, _Type.Maj)),
-        A6(new Interval("A6", 6, 10, _Type.Aug)),
-        
-        d7(new Interval("d7", 7, 9, _Type.Dim)),
-        m7(new Interval("m7", 7, 10, _Type.Min)),
-        M7(new Interval("M7", 7, 11, _Type.Maj)),
-        A7(new Interval("A7", 7, 12, _Type.Aug)),
-        
-        d8(new Interval("d8", 8, 11, _Type.Dim)),
-        P8(new Interval("P8", 8, 12, _Type.Per)),
-        
-        m9(new Interval("m9", 9, 13, _Type.Min)),
-        M9(new Interval("M9", 9, 14, _Type.Maj)),
-        m10(new Interval("m10", 10, 15, _Type.Min)),
-        M10(new Interval("M10", 10, 16, _Type.Maj)),
-        P11(new Interval("P11", 11, 17, _Type.Per)),
-        m13(new Interval("m13", 13, 20, _Type.Min)),
-        M13(new Interval("M13", 13, 21, _Type.Maj));
-        
-        private final Interval _intv;
-        _Interval(Interval _intv)
-        {
-            this._intv = _intv;
+        @Override
+        public String toString() {
+            switch (this)
+            {
+                case Per: return "P";
+                case Maj: return "M";
+                case Min: return "m";
+                case Aug: return "A";
+                case Dim: return "d";
+                default: throw new InternalError("Quality is wrong.");
+            }
         }
     }
-    
+
+    /**
+     * Initialization of common intervals
+     */
     private static final HashMap<String, Interval> _intv_str_map = new HashMap<>();
     private static final HashMap<Tuple<Integer, Integer>, Interval> _intv_degdist_map = new HashMap<>();
 
     static
     {
-        for (_Interval interval : _Interval.values())
+        Interval[] majorIntervals = {
+                new Interval(1, 0, Quality.Per),
+                new Interval(2, 2, Quality.Maj),
+                new Interval(3, 4, Quality.Maj),
+                new Interval(4, 5, Quality.Per),
+                new Interval(5, 7, Quality.Per),
+                new Interval(6, 9, Quality.Maj),
+                new Interval(7, 11, Quality.Maj)
+        };
+        for (Interval interval : majorIntervals)
         {
-            _intv_str_map.put(interval._intv.getName(), interval._intv);
-            _intv_degdist_map.put(new Tuple<>(interval._intv._degree, interval._intv._semitones), interval._intv);
+            int degree = interval._degree;
+            int semitones = interval._semitones;
+            Quality quality = interval._quality;
+            String qualityStr = quality.toString();
+            String octStr = "" + (degree + 7);
+            _intv_str_map.put(qualityStr + degree, interval);
+            _intv_str_map.put(qualityStr + octStr, new Interval(degree + 7, semitones + 12, quality));
+            if (quality == Quality.Per)
+            {
+                if (semitones > 0) {
+                    _intv_str_map.put("d" + degree, new Interval(degree, semitones - 1, Quality.Dim));
+                    _intv_str_map.put("d" + octStr, new Interval(degree + 7, semitones - 1 + 12, Quality.Dim));
+                }
+                _intv_str_map.put("A" + degree, new Interval(degree, semitones + 1, Quality.Aug));
+                _intv_str_map.put("A" + octStr, new Interval(degree + 7, semitones + 1 + 12, Quality.Aug));
+            }
+            else if (quality == Quality.Maj)
+            {
+                _intv_str_map.put("m" + degree, new Interval(degree, semitones - 1, Quality.Min));
+                _intv_str_map.put("A" + degree, new Interval(degree, semitones + 1, Quality.Aug));
+                _intv_str_map.put("d" + degree, new Interval(degree, semitones - 2, Quality.Dim));
+                if (degree < 7) {
+                    _intv_str_map.put("d" + octStr, new Interval(degree + 7, semitones - 2 + 12, Quality.Dim));
+                    _intv_str_map.put("m" + octStr, new Interval(degree + 7, semitones - 1 + 12, Quality.Min));
+                    _intv_str_map.put("A" + octStr, new Interval(degree + 7, semitones + 1 + 12, Quality.Aug));
+                }
+            }
+        }
+
+        for (Interval interval : _intv_str_map.values())
+        {
+            _intv_degdist_map.put(new Tuple<>(interval._degree, interval._semitones), interval);
         }
     }
 
-    private final String _name;
+    /**
+     * Member and construction
+     */
     private final int _degree;
     private final int _semitones;
     private Dir _dir = Dir.Above;
-    private final _Type _type;
-
-    private Interval(String name, int degree, int semitones, _Type type)
-    {
-        this._name = name;
-        this._degree = degree;
-        this._semitones = semitones;
-        this._type = type;
-    }
+    private final Quality _quality;
     
-    private Interval(int degree, int semitones, _Type type)
+    private Interval(int degree, int semitones, Quality type)
     {
         this._degree = degree;
         this._semitones = semitones;
-        this._type = type;
-        this._name = toString().substring(1);
+        this._quality = type;
     }
     
     private Interval(Interval other)
     {
-        this(other._name, other._degree, other._semitones, other._type);
+        this(other._degree, other._semitones, other._quality);
     }
 
     public static Interval parse(String interval)
@@ -145,45 +152,46 @@ public final class Interval
         throw new IllegalArgumentException("Parsing interval failed.");
     }
     
-    public static Interval get(int deg, int dist)
+    public static Interval parse(int deg, int dist)
     {
         Tuple<Integer, Integer> tuple = new Tuple<>(deg, dist);
         if (_intv_degdist_map.containsKey(tuple))
             return _intv_degdist_map.get(tuple);
-        throw new IllegalArgumentException("Cannot determine specific _type.");
+        throw new IllegalArgumentException("Cannot determine specific quality.");
     }
 
+    /**
+     * Getters and setters
+     */
     public int semitones()
     {
         return _semitones;
     }
-    public int degree() { return _degree - 1; }
+    public int degree() { return _degree; }
     public Dir dir()
     {
         return _dir;
     }
-    
-    public String getName()
-    {
-        return _name;
-    }
-    
+
     public void setDir(Dir dir)
     {
         this._dir = dir;
     }
 
-    
-    public boolean isDiminished() { return _type.equals(_Type.Dim); }
-    public boolean isMinor() { return _type.equals(_Type.Min); }
-    public boolean isMajor() { return _type.equals(_Type.Maj); }
-    public boolean isAugmented() { return _type.equals(_Type.Aug); }
-    
+    public boolean isDiminished() { return _quality.equals(Quality.Dim); }
+    public boolean isMinor() { return _quality.equals(Quality.Min); }
+    public boolean isMajor() { return _quality.equals(Quality.Maj); }
+    public boolean isAugmented() { return _quality.equals(Quality.Aug); }
+    public boolean isPerfect() { return _quality.equals(Quality.Per); }
+
+    /**
+     * Operations
+     */
     public Interval invert()
     {
         if (_degree > 8)
             throw new IllegalArgumentException("Compound interval inversion is not supported.");
-        return get(9 - _degree, 12 - _semitones);
+        return parse(9 - _degree, 12 - _semitones);
     }
 
     @Override public boolean equals(Object obj)
@@ -193,21 +201,6 @@ public final class Interval
 
     @Override public String toString()
     {
-        String ret = "";
-        if (_dir == Dir.Above)
-            ret = "+";
-        else if (_dir == Dir.Below)
-            ret = "-";
-        switch (_type)
-        {
-        case Per: ret += "P"; break;
-        case Maj: ret += "M"; break;
-        case Min: ret += "m"; break;
-        case Aug: ret += "A"; break;
-        case Dim: ret += "d"; break;
-        default: throw new InternalError("_Type is wrong.");
-        }
-        ret += _degree;
-        return ret;
+        return _dir.toString() + _quality.toString() + _degree;
     }
 }

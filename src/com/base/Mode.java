@@ -32,7 +32,7 @@ public class Mode
     public Mode(Mode mode)
     {
         this.name = mode.name;
-        mode.scale_tones.forEach(note -> this.scale_tones.add(Note.build(note)));
+        mode.scale_tones.forEach(note -> this.scale_tones.add(new Note(note)));
     }
 
     public void setName(String name)
