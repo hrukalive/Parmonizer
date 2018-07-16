@@ -19,6 +19,68 @@ import java.util.stream.Collectors;
  */
 
 public class Chord {
+
+    public class Builder {
+        private Note generator;
+        private Note root;
+        private ArrayList<Note> notes = new ArrayList<>();
+
+        public void setGenerator(Note note) {
+            this.generator = note;
+        }
+
+        public void setRoot(Note note) {
+            this.root = note;
+        }
+
+        public void stackA(Interval interval) {
+
+        }
+
+        public void stackFromRoot(Interval interval) {
+
+        }
+
+        public void addNote(Note note) {
+
+        }
+
+        public void omitability(int index, boolean omitable) {
+
+        }
+
+        public void repeatability(int index, boolean repeatable) {
+
+        }
+
+        public void omitPenalty(int index, int penalty) {
+
+        }
+
+        public void repeatPenalty(int index, int penalty) {
+
+        }
+
+        public void tendency(int index, Interval interval) {
+
+        }
+
+        public void altTendency(int index, Interval interval) {
+
+        }
+
+        public void preparedBy(int index, Interval interval) {
+
+        }
+
+        public void bonus(int index, Interval interval, int bonus) {
+        }
+
+        public Chord build() {
+            return new Chord(new ArrayList<>());
+        }
+    }
+
     private ArrayList<ChordNote> noteList;
 
     public Chord(ArrayList<ChordNote> noteList) {
