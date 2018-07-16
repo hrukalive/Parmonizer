@@ -19,8 +19,8 @@ public class ChordNote
     public ChordNote(Note note)
     {
         this.note = note;
-        this.repeatConfig = new Tuple<>(false, 0);
-        this.omitConfig = new Tuple<>(false, 0);
+        this.repeatConfig = new Tuple<>(true, 0);
+        this.omitConfig = new Tuple<>(true, 0);
     }
 
     public ChordNote(Note note, Tuple<Boolean, Integer> repeatConfig, Tuple<Boolean, Integer> omitConfig)

@@ -1,4 +1,7 @@
-package com.base;
+package com.base.scale;
+
+import com.base.Interval;
+import com.base.Note;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,19 +30,19 @@ public class Scale
     
     protected void build()
     {
-//        NoteStruct temproot = generator;
-//        for (int i = 0; i < intervalSteps.size(); i++)
-//        {
-//            ArrayList<NoteStruct> temptones = new ArrayList<>();
-//            temptones.add(NoteStruct.build(temproot));
-//            NoteStruct tempnote = temproot;
-//            for (int j = 0; j < intervalSteps.size() - 1; j++)
-//            {
-//                tempnote = tempnote.intervalAbove(intervalSteps.parse((i + j) % intervalSteps.size()));
-//                temptones.add(tempnote);
-//            }
-//            modes.put(i + "", new Mode(temptones));
-//        }
+        Note temproot = generator;
+        for (int i = 0; i < intervalSteps.size(); i++)
+        {
+            ArrayList<Note> temptones = new ArrayList<>();
+            temptones.add(new Note(temproot));
+            Note tempnote = temproot;
+            for (int j = 0; j < intervalSteps.size() - 1; j++)
+            {
+                tempnote = tempnote.interval(intervalSteps.get((i + j) % intervalSteps.size()));
+                temptones.add(tempnote);
+            }
+            // modes.put(i + "", new Mode(temptones));
+        }
     }
     
     public void putMode(String name, Mode mode) { modes.put(name, mode); }

@@ -1,5 +1,6 @@
 package com.base.chord;
 
+import com.base.Interval;
 import com.base.Note;
 import com.base.progression.VoiceConfig;
 import com.base.progression.VoiceNote;
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
  */
 
 public class Chord {
+    private ArrayList<Interval> intervalContents;
+    private Note generator;
+    private Interval rootDistance;
+
     private ArrayList<ChordNote> noteList;
 
     public Chord(ArrayList<ChordNote> noteList) {

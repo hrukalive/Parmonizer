@@ -6,6 +6,7 @@ import com.base.realization.ChordVoicing;
 import com.parser.ChordExpParser;
 import com.utils.VoiceLeadingPlayer;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
 public class Main {
@@ -27,7 +28,7 @@ public class Main {
         chords.add(new ChordExpParser().parse("[C,Eb,*G][4][E2:E4;B2:A4;F3:E5;C4:C6][p:][t:1\\>m2;1\\>M2;2\\>m2;2\\>M2][b:][r:T(500);T(500);T(50)][o:F;F;F][u:100;200;300][f:4=C][i:1=G3]").eval());
         chords.add(new ChordExpParser().parse("[*G,B,D][4][E2:E4;B2:A4;F3:E5;C4:C6][p:][t:2/>m2;(2\\>M3)][b:][r:T(50);F;T(200)][o:F;F;T(500)][u:500;200;300][f:4=B][i:1=G2]").eval());
         chords.add(new ChordExpParser().parse("[*C,Eb,G][4][E2:E4;B2:A4;F3:E5;C4:C6][p:][t:][b:][r:T(50);T(500);T(200)][o:F;F;T(500)][u:100;200;300][f:4=C][i:1=C3]").eval());
-        
+
         Progression prog = new Progression();
         for (ChordVoicing chord : chords)
             prog.addHarmony(chord);

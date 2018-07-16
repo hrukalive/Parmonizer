@@ -42,10 +42,16 @@ public class VoiceLeadingValidator
                         (nc1n.get(i).dist(nc2n.get(i)) > Interval.parse("m2").semitones() && nc1n.get(i).isDiminished(nc2n.get(i))))
                     return VoiceLeadingValidationResult.AUG_DIM_INTERVAL;
 
-                // Tendency tone must be resolved
-                if (!nc1n.get(i).getTendencies().isEmpty() && nc1n.get(i).getTendencies().indexOf(nc2n.get(i)) == -1 &&
-                        (nc1n.get(i).getAltTendency().isEmpty() || (!nc1n.get(i).getAltTendency().isEmpty() && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) == -1)))
-                    return VoiceLeadingValidationResult.TENDENCY_NOT_RESOLVED;
+                // Tendency tone must be resolved in the outer voices
+                // Alternative resolution can happen with inner voices
+                if (!nc1n.get(i).getTendencies().isEmpty() && nc1n.get(i).getTendencies().indexOf(nc2n.get(i)) == -1) {
+                    if (i == 0 || i == nc1n.size() - 1)
+                        return VoiceLeadingValidationResult.TENDENCY_NOT_RESOLVED;
+                    if (nc1n.get(i).getAltTendency().isEmpty())
+                        return VoiceLeadingValidationResult.TENDENCY_NOT_RESOLVED;
+                    if (!nc1n.get(i).getAltTendency().isEmpty() && nc1n.get(i).getAltTendency().indexOf(nc2n.get(i)) == -1)
+                        return VoiceLeadingValidationResult.TENDENCY_NOT_RESOLVED;
+                }
             }
         }
 

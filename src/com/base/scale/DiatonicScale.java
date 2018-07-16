@@ -1,4 +1,7 @@
-package com.base;
+package com.base.scale;
+
+import com.base.Note;
+import com.base.scale.Scale;
 
 /**
  * Represent 7 tones western scale.

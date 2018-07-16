@@ -1,4 +1,7 @@
-package com.base;
+package com.base.scale;
+
+import com.base.Interval;
+import com.base.Note;
 
 import java.util.ArrayList;
 
@@ -13,20 +16,18 @@ public class Mode
 {
     private String name = "";
     private Note generator;
-    private Interval tonic_distance;
+    private Interval tonicDistance;
     private Interval.Dir dir = Interval.Dir.Above;
     private ArrayList<Note> scale_tones = new ArrayList<>();
 
-    public Mode(String name, Note generator, Interval tonic_distance, ArrayList<Interval> intervalSteps, ArrayList<Interval> alterations)
+    public Mode(String name, Note generator, Interval tonicDistance, ArrayList<Interval> intervalSteps, ArrayList<Interval> alterations)
     {
         this.name = name;
         this.generator = generator;
-        this.tonic_distance = tonic_distance;
+        this.tonicDistance = tonicDistance;
         this.dir = intervalSteps.get(0).dir();
         if (alterations != null && intervalSteps.size() != alterations.size())
             throw new IllegalArgumentException("Mode creation failed due to illegal parameters.");
-        
-        
     }
 
     public Mode(Mode mode)
