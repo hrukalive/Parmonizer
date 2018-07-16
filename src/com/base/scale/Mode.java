@@ -14,45 +14,39 @@ import java.util.ArrayList;
 
 public class Mode
 {
-    private String name = "";
-    private Note generator;
-    private Interval tonicDistance;
-    private Interval.Dir dir = Interval.Dir.Above;
-    private ArrayList<Note> scale_tones = new ArrayList<>();
+    private final Note tonic;
+    private final Note generator;
+    private final ArrayList<Note> tones = new ArrayList<>();
+    private final ArrayList<Note> negativeTones = new ArrayList<>();
 
-    public Mode(String name, Note generator, Interval tonicDistance, ArrayList<Interval> intervalSteps, ArrayList<Interval> alterations)
+    public Mode(Note tonic, int index, ArrayList<Interval> intervalSteps, boolean allowRespell, Interval negativeGenInterval)
     {
-        this.name = name;
-        this.generator = generator;
-        this.tonicDistance = tonicDistance;
-        this.dir = intervalSteps.get(0).dir();
-        if (alterations != null && intervalSteps.size() != alterations.size())
-            throw new IllegalArgumentException("Mode creation failed due to illegal parameters.");
+        this.tonic = tonic;
+        this.generator = tonic.interval(negativeGenInterval);
+
+        Note tempnote = tonic;
+        tones.add(new Note(tonic));
+        for (int i = 0; i < intervalSteps.size() - 1; i++)
+        {
+            tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()));
+            tones.add(tempnote);
+        }
+
+        tempnote = generator;
+        negativeTones.add(new Note(generator));
+        for (int i = 0; i < intervalSteps.size() - 1; i++)
+        {
+            tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()).reverse());
+            negativeTones.add(tempnote);
+        }
+
+        System.out.println(tones);
+        System.out.println(negativeTones);
     }
 
     public Mode(Mode mode)
     {
-        this.name = mode.name;
-        mode.scale_tones.forEach(note -> this.scale_tones.add(new Note(note)));
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public Interval.Dir getDir()
-    {
-        return dir;
-    }
-
-    public Note getScaleTone(int degree)
-    {
-        return scale_tones.get((degree - 1) % scale_tones.size());
+        this.tonic = mode.tonic;
+        this.generator = mode.generator;
     }
 }

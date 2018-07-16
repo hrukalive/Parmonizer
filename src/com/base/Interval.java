@@ -194,6 +194,16 @@ public final class Interval
         return parse(9 - _degree, 12 - _semitones);
     }
 
+    public Interval reverse()
+    {
+        Interval ret = new Interval(this);
+        if (ret._dir.equals(Dir.Above))
+            ret._dir = Dir.Below;
+        else
+            ret._dir = Dir.Above;
+        return ret;
+    }
+
     @Override public boolean equals(Object obj)
     {
         return obj instanceof Interval && ((Interval)obj)._degree == _degree && ((Interval)obj)._semitones == _semitones;

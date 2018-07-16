@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
  */
 
 public class Chord {
-    private ArrayList<Interval> intervalContents;
-    private Note generator;
-    private Interval rootDistance;
-
     private ArrayList<ChordNote> noteList;
 
     public Chord(ArrayList<ChordNote> noteList) {
