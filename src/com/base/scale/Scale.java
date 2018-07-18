@@ -1,6 +1,6 @@
 package com.base.scale;
 
-import com.base.Interval;
+import com.base.interval.Interval;
 import com.base.Note;
 
 import java.util.ArrayList;

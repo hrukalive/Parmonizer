@@ -49,7 +49,7 @@ public final class VoiceConfig
         return insistNote;
     }
 
-    public void setInsistNote(VoiceNote insistNote)
+    public void setInsistNote(Note insistNote)
     {
         this.insistNote = insistNote;
     }

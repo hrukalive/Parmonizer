@@ -1,4 +1,6 @@
-package com.base;
+package com.base.interval;
+
+import com.base.Tuple;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -13,6 +15,51 @@ import java.util.regex.Pattern;
 
 public final class Interval
 {
+    public static final Interval P1 = Interval.parse("P1");
+    public static final Interval A1 = Interval.parse("A1");
+    public static final Interval d2 = Interval.parse("d2");
+    public static final Interval m2 = Interval.parse("m2");
+    public static final Interval M2 = Interval.parse("M2");
+    public static final Interval A2 = Interval.parse("A2");
+    public static final Interval d3 = Interval.parse("d3");
+    public static final Interval m3 = Interval.parse("m3");
+    public static final Interval M3 = Interval.parse("M3");
+    public static final Interval A3 = Interval.parse("A3");
+    public static final Interval d4 = Interval.parse("d4");
+    public static final Interval P4 = Interval.parse("P4");
+    public static final Interval A4 = Interval.parse("A4");
+    public static final Interval d5 = Interval.parse("d5");
+    public static final Interval P5 = Interval.parse("P5");
+    public static final Interval A5 = Interval.parse("A5");
+    public static final Interval d6 = Interval.parse("d6");
+    public static final Interval m6 = Interval.parse("m6");
+    public static final Interval M6 = Interval.parse("M6");
+    public static final Interval A6 = Interval.parse("A6");
+    public static final Interval d7 = Interval.parse("d7");
+    public static final Interval m7 = Interval.parse("m7");
+    public static final Interval M7 = Interval.parse("M7");
+    public static final Interval A7 = Interval.parse("A7");
+    public static final Interval d8 = Interval.parse("d8");
+    public static final Interval P8 = Interval.parse("P8");
+    public static final Interval A8 = Interval.parse("A8");
+    public static final Interval d9 = Interval.parse("d9");
+    public static final Interval m9 = Interval.parse("m9");
+    public static final Interval M9 = Interval.parse("M9");
+    public static final Interval A9 = Interval.parse("A9");
+    public static final Interval d10 = Interval.parse("d10");
+    public static final Interval m10 = Interval.parse("m10");
+    public static final Interval M10 = Interval.parse("M10");
+    public static final Interval A10 = Interval.parse("A10");
+    public static final Interval d11 = Interval.parse("d11");
+    public static final Interval P11 = Interval.parse("P11");
+    public static final Interval A11 = Interval.parse("A11");
+    public static final Interval d12 = Interval.parse("d12");
+    public static final Interval P12 = Interval.parse("P12");
+    public static final Interval A12 = Interval.parse("A12");
+    public static final Interval d13 = Interval.parse("d13");
+    public static final Interval m13 = Interval.parse("m13");
+    public static final Interval M13 = Interval.parse("M13");
+    public static final Interval A13 = Interval.parse("A13");
     /**
      * Interval direction and quality enum
      */

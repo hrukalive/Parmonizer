@@ -5,8 +5,8 @@ import com.base.chord.Chord;
 import com.base.chord.ChordNote;
 import com.base.progression.VoiceConfig;
 import com.base.progression.VoiceNote;
-import com.validation.ChordScorer;
-import com.validation.ChordValidator;
+import com.validation.ChordVoicingScorer;
+import com.validation.ChordVoicingValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,20 +15,25 @@ import java.util.stream.Collectors;
 public class ChordVoicing {
 
     public class NoteCluster implements Comparable<NoteCluster> {
-        private final ArrayList<VoiceNote> cluster;
+        private ArrayList<VoiceNote> cluster = new ArrayList<>();
+        private ArrayList<VoiceNote> distinctNotes = new ArrayList<>();
         private int loss = 0;
 
         public NoteCluster() {
-            cluster = new ArrayList<>();
         }
 
         private NoteCluster(NoteCluster cluster) {
-            this.cluster = new ArrayList<>(cluster.getNotes());
+            this.cluster = new ArrayList<>(cluster.cluster);
+            this.distinctNotes = new ArrayList<>(cluster.distinctNotes);
             this.loss = cluster.loss;
         }
 
         private void addVoice(VoiceNote note) {
             cluster.add(note);
+            for (Note n : distinctNotes) {
+                if (!n.isEnharmonicNoClass(note))
+                    distinctNotes.add(note);
+            }
         }
 
         private NoteCluster addVoiceNew(VoiceNote note) {
@@ -53,14 +58,11 @@ public class ChordVoicing {
             this.loss = loss;
         }
 
-        private void replace(int index, VoiceNote note) {
-            cluster.remove(index);
-            cluster.add(index, new VoiceNote(note));
-        }
-
         @Override
         public int compareTo(NoteCluster o) {
             if (o == null) throw new NullPointerException("Null Chord to compare");
+            if (distinctNotes.size() > o.distinctNotes.size()) return 0;
+            if (distinctNotes.size() < o.distinctNotes.size()) return 1;
             if (loss > o.loss) return 1;
             if (loss < o.loss) return -1;
             return 0;
@@ -92,8 +94,8 @@ public class ChordVoicing {
     private ArrayList<ChordNote> noteList;
     private ArrayList<VoiceConfig> voiceList;
 
-    private ChordValidator validator;
-    private ChordScorer scorer;
+    private ChordVoicingValidator validator;
+    private ChordVoicingScorer scorer;
 
     private ArrayList<NoteCluster> realizations = new ArrayList<>();
 
@@ -104,10 +106,10 @@ public class ChordVoicing {
         ArrayList<Integer> unisonPenalty = new ArrayList<>();
         for (int i = 0; i < voiceList.size() - 1; i++)
             unisonPenalty.add(voiceList.get(i).getUnisonPenalty());
-        validator = new ChordValidator((ArrayList<Boolean>) noteList.stream().map(n -> n.getRepeatConfig().getFirst()).collect(Collectors.toList()),
-                (ArrayList<Boolean>) noteList.stream().map(n -> n.getOmitConfig().getFirst()).collect(Collectors.toList()));
-        scorer = new ChordScorer((ArrayList<Integer>) noteList.stream().map(n -> n.getRepeatConfig().getSecond()).collect(Collectors.toList()),
-                (ArrayList<Integer>) noteList.stream().map(n -> n.getOmitConfig().getSecond()).collect(Collectors.toList()),
+        validator = new ChordVoicingValidator((ArrayList<Boolean>) noteList.stream().map(ChordNote::isRepeatable).collect(Collectors.toList()),
+                (ArrayList<Boolean>) noteList.stream().map(ChordNote::isOmittable).collect(Collectors.toList()));
+        scorer = new ChordVoicingScorer((ArrayList<Integer>) noteList.stream().map(ChordNote::getRepeatPenalty).collect(Collectors.toList()),
+                (ArrayList<Integer>) noteList.stream().map(ChordNote::getOmitPenalty).collect(Collectors.toList()),
                 unisonPenalty);
     }
     public ChordVoicing(ChordVoicing other) {
@@ -118,6 +120,7 @@ public class ChordVoicing {
         realizations.clear();
         NoteCluster temp = new NoteCluster();
         yieldHelper(0, temp, voiceList.size());
+        Collections.sort(realizations);
     }
 
     private void yieldHelper(int num, NoteCluster accum, int voices) {
@@ -135,11 +138,11 @@ public class ChordVoicing {
                 note.setInsisted();
                 yieldHelper(num + 1, accum.addVoiceNew(note), voices);
             } else if (voiceConfig.getFixClassNote() != null)
-                for (VoiceNote note : new VoiceNote(voiceConfig.getFixClassNote().getNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
+                for (VoiceNote note : new VoiceNote(voiceConfig.getFixClassNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
                     yieldHelper(num + 1, accum.addVoiceNew(note), voices);
             else {
                 for (ChordNote noteConfig : noteList) {
-                    for (VoiceNote note : new VoiceNote(noteConfig.getNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh())) {
+                    for (VoiceNote note : new VoiceNote(noteConfig).allInRange(voiceConfig.getLow(), voiceConfig.getHigh())) {
                         noteConfig.getPrepareList().forEach(intv -> note.addPrepare(note.interval(intv)));
                         noteConfig.getTendencyList().forEach(intv -> note.addTendency(note.interval(intv)));
                         noteConfig.getAltTendencyList().forEach(intv -> note.addAltTendency(note.interval(intv)));
@@ -163,6 +166,6 @@ public class ChordVoicing {
     }
 
     public Note getBass() {
-        return voiceList.get(0).getFixClassNote().getNote();
+        return voiceList.get(0).getFixClassNote();
     }
 }

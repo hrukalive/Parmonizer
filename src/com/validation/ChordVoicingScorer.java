@@ -13,13 +13,13 @@ import java.util.ArrayList;
  * Created by NyLP on 6/16/17.
  */
 
-public final class ChordScorer
+public final class ChordVoicingScorer
 {
     private final ArrayList<Integer> repeatPenalty;
     private final ArrayList<Integer> omitPenalty;
     private final ArrayList<Integer> unisonPenalty;
 
-    public ChordScorer(ArrayList<Integer> repeatPenalty, ArrayList<Integer> omitPenalty, ArrayList<Integer> unisonPenalty)
+    public ChordVoicingScorer(ArrayList<Integer> repeatPenalty, ArrayList<Integer> omitPenalty, ArrayList<Integer> unisonPenalty)
     {
         this.repeatPenalty = repeatPenalty;
         this.omitPenalty = omitPenalty;

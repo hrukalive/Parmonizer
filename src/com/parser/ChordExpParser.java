@@ -1,11 +1,10 @@
 package com.parser;
 
-import com.base.chord.Chord;
 import com.base.Tuple;
 import com.base.Note;
 import com.base.chord.ChordNote;
 import com.base.progression.VoiceConfig;
-import com.base.Interval;
+import com.base.interval.Interval;
 import com.base.progression.VoiceNote;
 import com.base.realization.ChordVoicing;
 
@@ -103,7 +102,16 @@ public class ChordExpParser implements IParser<ChordVoicing>
                     }
                     else
                         note = new VoiceNote(Note.parse(noteStrs.get(i)));
-                    noteList.add(new ChordNote(note, new Tuple<>(repeatability, repeatPenalty), new Tuple<>(omissibility, omitPenalty)));
+                    ChordNote chordNote = new ChordNote(note);
+                    if (repeatability)
+                        chordNote.setRepeatable(repeatPenalty);
+                    else
+                        chordNote.setNotRepeatable();
+                    if (omissibility)
+                        chordNote.setOmittable(omitPenalty);
+                    else
+                        chordNote.setNotOmittable();
+                    noteList.add(chordNote);
                 }
             }
             else
@@ -243,7 +251,7 @@ public class ChordExpParser implements IParser<ChordVoicing>
             if (int_bass == null)
             {
                 if (inv_bass == null)
-                    fixClassStrs.add("1=" + noteList.get(0).getNote()._toString(false));
+                    fixClassStrs.add("1=" + noteList.get(0)._toString(false));
                 else
                     fixClassStrs.add("1=" + inv_bass._toString(false));
             }
@@ -275,7 +283,7 @@ public class ChordExpParser implements IParser<ChordVoicing>
                             ChordNote nc = null;
                             for (ChordNote cnc : noteList)
                             {
-                                if (cnc.getNote().isEnharmonicNoClass(fixNoteClass))
+                                if (cnc.isEnharmonicNoClass(fixNoteClass))
                                 {
                                     nc = new ChordNote(cnc);
                                     break;
@@ -284,7 +292,7 @@ public class ChordExpParser implements IParser<ChordVoicing>
                             if (voice == 0)
                             {
                                 if (nc == null)
-                                    nc = new ChordNote(fixNoteClass, null, null);
+                                    nc = new ChordNote(fixNoteClass);
                                 else
                                 {
                                     nc.getPrepareList().clear();

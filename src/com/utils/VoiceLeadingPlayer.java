@@ -32,7 +32,7 @@ public final class VoiceLeadingPlayer {
 
         for (ChordVoicing.NoteCluster nc : voiceLeading.getPiece()) {
             for (Note n : nc.getNotes()) {
-                channel.noteOn(n.getCode(), 100);
+                channel.noteOn(n.getCode(), 50);
             }
             try {
                 Thread.sleep(1000);

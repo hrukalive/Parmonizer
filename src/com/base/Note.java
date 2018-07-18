@@ -1,7 +1,7 @@
 package com.base;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.base.interval.Interval;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,9 +15,9 @@ import java.util.regex.Pattern;
 
 public class Note implements Comparable<Note>
 {
-    protected final int _noteCode;
-    protected final int _octave;
-    protected final int _alteration;
+    protected int _noteCode;
+    protected int _octave;
+    protected int _alteration;
 
     public Note(int noteCode, int octave, int alteration)
     {
@@ -128,6 +128,25 @@ public class Note implements Comparable<Note>
         if (compareTo(note) > 0)
             return note.isMinor(this);
         return interval(note).isMinor();
+    }
+
+    public void octaveUp()
+    {
+        _octave++;
+    }
+
+    public void octaveDown()
+    {
+        _octave--;
+    }
+
+    public void octave(int delta)
+    {
+        _octave += delta;
+    }
+
+    public int getOctave() {
+        return _octave;
     }
 
     private Note _intervalAbove(Interval intv)

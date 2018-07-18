@@ -1,78 +1,103 @@
 package com.base.chord;
 
-import com.base.Interval;
+import com.base.interval.Interval;
 import com.base.Note;
 import com.base.Tuple;
 
 import java.util.ArrayList;
 
-public class ChordNote
-{
-    private final Note note;
-    private final Tuple<Boolean, Integer> repeatConfig;
-    private final Tuple<Boolean, Integer> omitConfig;
+public class ChordNote extends Note {
+    private boolean repeatable = true;
+    private int repeatPenalty = 0;
+    private boolean omittable = true;
+    private int omitPenalty = 0;
     private final ArrayList<Interval> prepareList = new ArrayList<>();
     private final ArrayList<Interval> tendencyList = new ArrayList<>();
     private final ArrayList<Interval> altTendencyList = new ArrayList<>();
     private final ArrayList<Tuple<Interval, Integer>> bonusList = new ArrayList<>();
 
-    public ChordNote(Note note)
-    {
-        this.note = note;
-        this.repeatConfig = new Tuple<>(true, 0);
-        this.omitConfig = new Tuple<>(true, 0);
+    public ChordNote(Note note) {
+        super(note);
     }
 
-    public ChordNote(Note note, Tuple<Boolean, Integer> repeatConfig, Tuple<Boolean, Integer> omitConfig)
-    {
-        this.note = note;
-        this.repeatConfig = repeatConfig;
-        this.omitConfig = omitConfig;
-    }
-
-    public ChordNote(ChordNote config)
-    {
-        this.note = config.note;
-        this.repeatConfig = config.repeatConfig;
-        this.omitConfig = config.omitConfig;
+    public ChordNote(ChordNote config) {
+        super(config);
         this.prepareList.addAll(config.prepareList);
         this.tendencyList.addAll(config.tendencyList);
         this.altTendencyList.addAll(config.altTendencyList);
         this.bonusList.addAll(config.bonusList);
     }
 
-    public Note getNote()
-    {
-        return note;
+    public Note getNote() {
+        return this;
     }
 
-    public Tuple<Boolean, Integer> getRepeatConfig()
-    {
-        return repeatConfig;
+    public boolean isRepeatable() {
+        return repeatable;
     }
 
-    public Tuple<Boolean, Integer> getOmitConfig()
-    {
-        return omitConfig;
+    public boolean isOmittable() {
+        return omittable;
     }
 
-    public ArrayList<Interval> getPrepareList()
-    {
+    public int getRepeatPenalty() {
+        return repeatPenalty;
+    }
+
+    public int getOmitPenalty() {
+        return omitPenalty;
+    }
+
+    public void setOmittable(int penalty) {
+        this.omittable = true;
+        this.omitPenalty = penalty;
+    }
+
+    public void setRepeatable(int penalty) {
+        this.repeatable = true;
+        this.repeatPenalty = penalty;
+    }
+
+    public void setNotOmittable() {
+        this.omittable = false;
+        this.omitPenalty = 0;
+    }
+
+    public void setNotRepeatable() {
+        this.repeatable = false;
+        this.repeatPenalty = 0;
+    }
+
+    public void addPreparation(Interval interval) {
+        prepareList.add(interval);
+    }
+
+    public void addTendency(Interval interval) {
+        tendencyList.add(interval);
+    }
+
+    public void addAltTendency(Interval interval) {
+        altTendencyList.add(interval);
+    }
+
+    public void addBonus(Interval interval, int bonus) {
+        bonusList.add(new Tuple<>(interval, bonus));
+    }
+
+    public ArrayList<Interval> getPrepareList() {
         return prepareList;
     }
 
-    public ArrayList<Interval> getTendencyList()
-    {
+    public ArrayList<Interval> getTendencyList() {
         return tendencyList;
     }
 
-    public ArrayList<Interval> getAltTendencyList()
-    {
+    public ArrayList<Interval> getAltTendencyList() {
         return altTendencyList;
     }
 
-    public ArrayList<Tuple<Interval, Integer>> getBonusList()
-    {
+    public ArrayList<Tuple<Interval, Integer>> getBonusList() {
         return bonusList;
     }
+
 }

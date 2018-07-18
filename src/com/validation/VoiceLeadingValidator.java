@@ -1,6 +1,6 @@
 package com.validation;
 
-import com.base.Interval;
+import com.base.interval.Interval;
 import com.base.realization.ChordVoicing.NoteCluster;
 import com.base.progression.VoiceNote;
 
