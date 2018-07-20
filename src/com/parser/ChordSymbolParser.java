@@ -97,6 +97,7 @@ public class ChordSymbolParser implements IParser<Chord.Builder> {
             Matcher matcher_quality = pattern_quality.matcher(str);
             if (matcher_quality.find()) {
                 System.out.println(matcher_quality.group(1) + matcher_quality.group(3));
+                System.out.println(str.equals(matcher_quality.group(1) + matcher_quality.group(3)));
             }
         }
         return null;
