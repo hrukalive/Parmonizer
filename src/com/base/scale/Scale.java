@@ -7,15 +7,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Implement the concept of scale. (Need rethinking because of 
- * the altered note in some chords, differentiating upward and 
+ * Implement the concept of scale. (Need rethinking because of
+ * the altered note in some chords, differentiating upward and
  * downward noteSet, generator difference in negative harmony).
- *
+ * <p>
  * Created by NyLP on 7/4/17.
  */
 
-public class Scale
-{
+public class Scale {
     private final Note tonic;
     private final ArrayList<Interval> intervalSteps;
     private Interval negativeGenInterval = Interval.parse("P5");
@@ -25,34 +24,29 @@ public class Scale
     private final ArrayList<Mode> modes = new ArrayList<>();
     private final HashMap<String, Integer> modeAliasMap = new HashMap<>();
 
-    public Scale(Note tonic, ArrayList<Interval> intervalSteps)
-    {
+    public Scale(Note tonic, ArrayList<Interval> intervalSteps) {
         this.tonic = tonic;
         this.intervalSteps = intervalSteps;
         build();
     }
 
-    public Scale(Note tonic, ArrayList<Interval> intervalSteps, Interval negativeGenInterval)
-    {
+    public Scale(Note tonic, ArrayList<Interval> intervalSteps, Interval negativeGenInterval) {
         this(tonic, intervalSteps);
         this.negativeGenInterval = negativeGenInterval;
         build();
     }
-    
-    private void build()
-    {
-        for (int i = 0; i < intervalSteps.size(); i++)
-        {
+
+    private void build() {
+        for (int i = 0; i < intervalSteps.size(); i++) {
             Mode mode = new Mode(tonic, i, intervalSteps, allowRespell, negativeGenInterval);
             modes.add(mode);
         }
     }
 
-    public void allowRespell()
-    {
+    public void allowRespell() {
         allowRespell = true;
     }
-    
+
     public void setModeName(int index, String name) {
         if (index < 0 || index > modes.size())
             throw new IllegalArgumentException("Selected mode does not exist.");
@@ -67,8 +61,7 @@ public class Scale
         return modes.get(index);
     }
 
-    public Mode getMode(String name)
-    {
+    public Mode getMode(String name) {
         return modes.get(modeAliasMap.get(name));
     }
 }

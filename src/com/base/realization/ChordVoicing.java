@@ -99,6 +99,27 @@ public class ChordVoicing {
 
     private ArrayList<NoteCluster> realizations = new ArrayList<>();
 
+    public ChordVoicing(Chord chord) {
+        this.chord = new Chord(chord);
+        this.noteList = new ArrayList<>(chord.getChordNotes());
+        this.voiceList = new ArrayList<>();
+        if (chord.isBassInChord())
+            this.voiceList.add(new VoiceConfig(Note.parse("E2"), Note.parse("E4"), chord.getBass(), null, 50));
+        else
+            this.voiceList.add(new VoiceConfig(Note.parse("E2"), Note.parse("E4"), null, chord.getBass(), 50));
+        this.voiceList.add(new VoiceConfig(Note.parse("B2"), Note.parse("A4"), null, null, 20));
+        this.voiceList.add(new VoiceConfig(Note.parse("F3"), Note.parse("E5"), null, null, 30));
+        this.voiceList.add(new VoiceConfig(Note.parse("C4"), Note.parse("C6"), null, null, 0));
+        ArrayList<Integer> unisonPenalty = new ArrayList<>();
+        for (int i = 0; i < voiceList.size() - 1; i++)
+            unisonPenalty.add(voiceList.get(i).getUnisonPenalty());
+        validator = new ChordVoicingValidator((ArrayList<Boolean>) noteList.stream().map(ChordNote::isRepeatable).collect(Collectors.toList()),
+                (ArrayList<Boolean>) noteList.stream().map(ChordNote::isOmittable).collect(Collectors.toList()));
+        scorer = new ChordVoicingScorer((ArrayList<Integer>) noteList.stream().map(ChordNote::getRepeatPenalty).collect(Collectors.toList()),
+                (ArrayList<Integer>) noteList.stream().map(ChordNote::getOmitPenalty).collect(Collectors.toList()),
+                unisonPenalty);
+    }
+
     public ChordVoicing(Chord chord, ArrayList<VoiceConfig> voiceList) {
         this.chord = new Chord(chord);
         this.noteList = new ArrayList<>(chord.getChordNotes());
@@ -112,6 +133,7 @@ public class ChordVoicing {
                 (ArrayList<Integer>) noteList.stream().map(ChordNote::getOmitPenalty).collect(Collectors.toList()),
                 unisonPenalty);
     }
+
     public ChordVoicing(ChordVoicing other) {
         this(other.chord, other.voiceList);
     }

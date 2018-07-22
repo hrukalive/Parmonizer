@@ -1,5 +1,9 @@
 package com.base;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Data Structure for a Triple.
  * 
@@ -32,6 +36,17 @@ public class Triple<T, U, V>
     public V getThird()
     {
         return third;
+    }
+
+    public static <T, U, V> List<Triple<T, U, V>> zip(List<T> l1, List<U> l2, List<V> l3) {
+        Iterator<T> it1 = l1.iterator();
+        Iterator<U> it2 = l2.iterator();
+        Iterator<V> it3 = l3.iterator();
+        List<Triple<T, U, V>> ret = new ArrayList<>();
+        while (it1.hasNext() && it2.hasNext() && it3.hasNext()) {
+            ret.add(new Triple<>(it1.next(), it2.next(), it3.next()));
+        }
+        return ret;
     }
 
     @Override public int hashCode()
