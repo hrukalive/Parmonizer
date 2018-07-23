@@ -5,6 +5,7 @@ import com.base.Note;
 import com.base.chord.Chord;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Concept of a mode of a scale.
@@ -21,7 +22,7 @@ public class Mode
     private final ArrayList<Note> tones = new ArrayList<>();
     private final ArrayList<Note> negativeTones = new ArrayList<>();
 
-    public Mode(Note tonic, int index, ArrayList<Interval> intervalSteps, boolean allowRespell, Interval negativeGenInterval)
+    public Mode(Note tonic, int index, List<Interval> intervalSteps, boolean allowRespell, Interval negativeGenInterval)
     {
         this.tonic = tonic;
         this.generator = tonic.interval(negativeGenInterval);

@@ -117,6 +117,7 @@ public class Note implements Comparable<Note> {
         return o != null && this.getCode() == o.getCode();
     }
 
+    // TODO: Miss use of enharmonic in several instances
     public boolean isEnharmonicNoClass(Note o) {
         return o != null && (this.getCode() % 12) == (o.getCode() % 12);
     }

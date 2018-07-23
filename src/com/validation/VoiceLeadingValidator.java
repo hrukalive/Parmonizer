@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 
 public class VoiceLeadingValidator {
-    public enum VoiceLeadingValidationResult {SUCCESS, VOICE_OVERLAP, LARGE_LEAP, AUG_DIM_INTERVAL, TENDENCY_NOT_RESOLVED, PARALLEL_PERFECT_INTERVAL, CONTRARY_PERFECTION_INTERVAL, NOT_PREPARED}
+    public enum VoiceLeadingValidationResult {SUCCESS, VOICE_OVERLAP, LARGE_LEAP, AUG_INTERVAL, TENDENCY_NOT_RESOLVED, PARALLEL_PERFECT_INTERVAL, CONTRARY_PERFECTION_INTERVAL, NOT_PREPARED}
 
     public static VoiceLeadingValidationResult validate(NoteCluster nc1, NoteCluster nc2) {
         ArrayList<VoiceNote> nc1n = nc1.getNotes();
@@ -33,10 +33,9 @@ public class VoiceLeadingValidator {
                 if (i > 0 && Math.abs(nc1n.get(i).dist(nc2n.get(i))) > Interval.parse("P4").semitones())
                     return VoiceLeadingValidationResult.LARGE_LEAP;
 
-                // No Aug or Dim interval
-                if ((nc1n.get(i).dist(nc2n.get(i)) > Interval.parse("M2").semitones() && nc1n.get(i).isAugmented(nc2n.get(i))) ||
-                        (nc1n.get(i).dist(nc2n.get(i)) > Interval.parse("m2").semitones() && nc1n.get(i).isDiminished(nc2n.get(i))))
-                    return VoiceLeadingValidationResult.AUG_DIM_INTERVAL;
+                // No Aug interval
+                if (nc1n.get(i).dist(nc2n.get(i)) > Interval.parse("M2").semitones() && nc1n.get(i).isAugmented(nc2n.get(i)))
+                    return VoiceLeadingValidationResult.AUG_INTERVAL;
 
                 // Tendency tone must be resolved in the outer voices
                 // Alternative resolution can happen with inner voices

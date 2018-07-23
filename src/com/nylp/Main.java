@@ -25,6 +25,7 @@ public class Main {
 
         System.out.println(scale.getMode(0).chord(0, 3, 7));
         System.out.println(scale.getMode(0).negativeChord(4, 3, 7));
+        System.out.println(Chord.parse("Cdim7").build().getChordNotes());
 
         Progression prog = new Progression();
         prog.addHarmony(new ChordVoicing(Chord.parse("-Cmaj").build()));

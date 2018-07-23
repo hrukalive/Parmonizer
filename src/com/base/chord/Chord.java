@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
  */
 
 public class Chord {
-
-
     public static class Builder {
         private Note generator;
         private ChordNote root;
@@ -321,6 +319,10 @@ public class Chord {
 
     public int getInversion() {
         return inversion;
+    }
+
+    public Note getRoot() {
+        return noteList.get(0);
     }
 
     public boolean isBassInChord() {
