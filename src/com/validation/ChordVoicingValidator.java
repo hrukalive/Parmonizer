@@ -24,7 +24,7 @@ public final class ChordVoicingValidator {
     public boolean validate(ArrayList<VoiceNote> chordRealization, ChordVoicing parent) {
         boolean isChord = false;
         for (int i = 0; i < chordRealization.size() - 1; i++) {
-            if (!chordRealization.get(i + 1).isEnharmonicNoClass(chordRealization.get(i))) {
+            if (!chordRealization.get(i + 1).equalsNoClass(chordRealization.get(i))) {
                 isChord = true;
                 break;
             }
@@ -43,7 +43,7 @@ public final class ChordVoicingValidator {
                 boolean existFlag = false;
                 Note notOmitNote = chordTones.get(i);
                 for (Note note : chordRealization) {
-                    if (note.isEnharmonicNoClass(notOmitNote)) {
+                    if (note.equalsNoClass(notOmitNote)) {
                         existFlag = true;
                         break;
                     }
@@ -56,7 +56,7 @@ public final class ChordVoicingValidator {
         int[] counter = new int[chordTones.size()];
         for (Note note : chordRealization) {
             for (int i = 0; i < chordTones.size(); i++) {
-                if (note.isEnharmonicNoClass(chordTones.get(i))) {
+                if (note.equalsNoClass(chordTones.get(i))) {
                     counter[i]++;
                     break;
                 }

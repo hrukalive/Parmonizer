@@ -117,7 +117,6 @@ public class Note implements Comparable<Note> {
         return o != null && this.getCode() == o.getCode();
     }
 
-    // TODO: Miss use of enharmonic in several instances
     public boolean isEnharmonicNoClass(Note o) {
         return o != null && (this.getCode() % 12) == (o.getCode() % 12);
     }
@@ -168,6 +167,32 @@ public class Note implements Comparable<Note> {
         temp_noteCode %= 7;
         int temp_alteration = intv.semitones() - (_getCode(temp_noteCode, temp_octave, 0) - this.getCode());
         return new Note(temp_noteCode, temp_octave, temp_alteration);
+    }
+
+    public boolean hasBetterSpell() {
+        return Math.abs(_alteration) == 2 ||
+                ((_noteCode == 2 || _noteCode == 6) && _alteration > 0) ||
+                ((_noteCode == 3 || _noteCode == 0) && _alteration < 0);
+    }
+    
+    public void respell() {
+        if ((_noteCode == 2 || _noteCode == 6) && _alteration > 0) {
+            _noteCode++;
+            _octave += _noteCode / 7;
+            _noteCode %= 7;
+            _alteration = _alteration - 1;
+        } else if ((_noteCode == 3 || _noteCode == 0) && _alteration < 0) {
+            _noteCode--;
+            _octave += Math.floorDiv(_noteCode, 7);
+            _noteCode = (_noteCode + 7) % 7;
+            _alteration = _alteration + 1;
+        } else if (_alteration > 0) {
+            _noteCode++;
+            _alteration -= 2;
+        } else if (_alteration < 0) {
+            _noteCode--;
+            _alteration += 2;
+        }
     }
 
     private Note _intervalBelow(Interval intv) {
@@ -256,6 +281,10 @@ public class Note implements Comparable<Note> {
                 break;
         }
         return ret + (includeOct ? _octave : "");
+    }
+
+    public boolean equalsNoClass(Note note) {
+        return note != null && this._noteCode == note._noteCode && this._alteration == note._alteration;
     }
 
     @Override

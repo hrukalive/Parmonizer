@@ -34,7 +34,7 @@ public final class ChordVoicingScorer {
             boolean existFlag = false;
             Note notOmitNote = chordTones.get(i);
             for (VoiceNote note : chordRealization) {
-                if (note.isEnharmonicNoClass(notOmitNote)) {
+                if (note.equalsNoClass(notOmitNote)) {
                     existFlag = true;
                     break;
                 }
@@ -45,7 +45,7 @@ public final class ChordVoicingScorer {
 
         for (VoiceNote note : chordRealization) {
             for (int i = 0; i < chordTones.size(); i++) {
-                if (note.isEnharmonicNoClass(chordTones.get(i))) {
+                if (note.equalsNoClass(chordTones.get(i))) {
                     counter[i]++;
                     break;
                 }

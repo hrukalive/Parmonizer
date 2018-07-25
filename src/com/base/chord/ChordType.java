@@ -151,4 +151,32 @@ public enum ChordType {
     public List<Integer> getRepeatPenalties() {
         return repeatPenalties;
     }
+
+    public boolean isMajor() {
+        return chordIntervals.contains(Interval.M3) &&
+                chordIntervals.contains(Interval.P5);
+    }
+    public boolean isMinor() {
+        return chordIntervals.contains(Interval.m3) &&
+                chordIntervals.contains(Interval.P5);
+    }
+    public boolean isDiminished() {
+        return chordIntervals.contains(Interval.m3) &&
+                chordIntervals.contains(Interval.d5);
+    }
+    public boolean isDominant() {
+        return chordIntervals.contains(Interval.M3) &&
+                chordIntervals.contains(Interval.P5) &&
+                chordIntervals.contains(Interval.m7);
+    }
+    public boolean isHalfDiminished() {
+        return chordIntervals.contains(Interval.m3) &&
+                chordIntervals.contains(Interval.d5) &&
+                chordIntervals.contains(Interval.m7);
+    }
+    public boolean isFullyDiminished() {
+        return chordIntervals.contains(Interval.m3) &&
+                chordIntervals.contains(Interval.d5) &&
+                chordIntervals.contains(Interval.d7);
+    }
 }

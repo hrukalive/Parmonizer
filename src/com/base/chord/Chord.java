@@ -5,6 +5,7 @@ import com.base.Tuple;
 import com.base.interval.Interval;
 import com.base.Note;
 import com.base.realization.ChordVoicing;
+import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -21,10 +22,12 @@ import java.util.stream.Collectors;
 public class Chord {
     public static class Builder {
         private Note generator;
+        private ChordType type;
         private ChordNote root;
         private ChordNote bass = null;
         private int inversion = 0;
         private ArrayList<ChordNote> notes = new ArrayList<>();
+        private Note tonic = null;
 
         public Builder(Note note) {
             this.generator = note;
@@ -35,7 +38,7 @@ public class Chord {
         public Builder setRoot(Note root) {
             ChordNote tmp = null;
             for (ChordNote note : notes) {
-                if (note.isEnharmonicNoClass(root)) {
+                if (note.equalsNoClass(root)) {
                     tmp = note;
                     break;
                 }
@@ -47,16 +50,31 @@ public class Chord {
             return this;
         }
 
+        public Builder setTonic(Note tonic) {
+            this.tonic = tonic;
+            return this;
+        }
+
+        public Builder setType(ChordType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setInversion(int inv) {
+            return setBass(notes.get(inv));
+        }
+
         public Builder setBass(Note bass) {
             if (bass == null)
                 return this;
             for (int i = 0; i < notes.size(); i++) {
-                if (notes.get(i).isEnharmonicNoClass(bass)) {
+                if (notes.get(i).equalsNoClass(bass)) {
                     inversion = i;
                     this.bass = null;
                     return this;
                 }
             }
+            this.inversion = 0;
             this.bass = new ChordNote(bass);
             this.bass.setNotOmittable();
             this.bass.setNotRepeatable();
@@ -170,12 +188,28 @@ public class Chord {
             return this;
         }
 
+        public int getInversion() {
+            return inversion;
+        }
+
+        public int getNoteNumber() {
+            return notes.size();
+        }
+
+        public ChordType getType() {
+            return type;
+        }
+
         public Builder negativeBuilder() {
             return negativeBuilder(Interval.P5);
         }
 
         public Builder negativeBuilder(Interval generatorInterval) {
-            Builder builder = new Builder(root.interval(generatorInterval));
+            if (tonic == null) {
+                throw new IllegalArgumentException("Tonic is not defined.");
+            }
+            Note gen = tonic.interval(generatorInterval).interval(tonic.interval(root).reverse());
+            Builder builder = new Builder(gen);
             for (int i = 1; i < notes.size(); i++) {
                 ChordNote note = notes.get(i);
                 builder.stackFromGenerator(generator.interval(note).reverse());
@@ -200,7 +234,20 @@ public class Chord {
                     builder.bonus(tuple.getFirst().reverse(), tuple.getSecond());
                 }
             }
-            builder.setRoot(root);
+            int deg = generatorInterval.degree();
+            int semitone = generatorInterval.semitones();
+            if (builder.notes.contains(gen.interval(generatorInterval.reverse())))
+                builder.setRoot(gen.interval(generatorInterval.reverse()));
+            else if (builder.notes.contains(gen.interval(Interval.parse(deg, semitone - 1).reverse())))
+                builder.setRoot(gen.interval(Interval.parse(deg, semitone - 1).reverse()));
+            else if (builder.notes.contains(gen.interval(Interval.parse(deg, semitone + 1).reverse())))
+                builder.setRoot(gen.interval(Interval.parse(deg, semitone + 1).reverse()));
+            else
+                throw new InternalException("Cannot set root for negative harmony.");
+            if (this.bass != null)
+                builder.setBass(gen.interval(this.root.interval(this.bass).reverse()));
+            else
+                builder.setInversion(this.inversion);
             return builder;
         }
 
@@ -231,6 +278,14 @@ public class Chord {
     }
 
     public static Chord.Builder parse(String chordSymbol) {
+        return parse(chordSymbol, null, null);
+    }
+
+    public static Chord.Builder parse(String chordSymbol, Note tonic) {
+        return parse(chordSymbol, tonic, null);
+    }
+
+    public static Chord.Builder parse(String chordSymbol, Note tonic, Interval intv) {
         Pattern pattern_note = Pattern.compile("(-?)([A-G](bb|b|#|x)?)");
         Pattern pattern_quality = Pattern.compile("(5|(69|6|add6|add13|2|add2|add9|maj(7#5|7b6|7|9|13|#4|#11)?)|(min(7b5|7b6|7|Maj7|6|9|11|13)?)|(dim7|dim|aug)|(7b9|7#9|7#4|7#11|7sus4|7alt|7|9|13|11sus)|(sus4|sus2|sus\\(b9\\)))");
         Matcher matcher_note = pattern_note.matcher(chordSymbol);
@@ -245,7 +300,7 @@ public class Chord {
             String quality = matcher_quality.group(1);
             if (chordTypes.containsKey(quality)) {
                 ChordType type = chordTypes.get(quality);
-                final Chord.Builder builder = new Chord.Builder(generator);
+                final Chord.Builder builder = new Chord.Builder(generator).setType(type).setTonic(tonic);
                 for (Interval interval : type.getIntervals())
                     builder.stackFromGenerator(interval);
                 for (int i = 0; i < type.getOmitPenalties().size(); i++) {
@@ -261,6 +316,7 @@ public class Chord {
                         builder.repeatable(i, type.getRepeatPenalties().get(i));
                 }
                 builder.setBass(bass);
+                DiatonicChordProperty.apply(builder, intv);
                 return isNegative ? builder.negativeBuilder() : builder;
             } else {
                 throw new IllegalArgumentException("Chord type not recognized.");
@@ -270,37 +326,39 @@ public class Chord {
         }
     }
 
+    private ChordType type;
     private ArrayList<ChordNote> noteList;
     private int inversion = 0;
     private ChordNote bass = null;
 
     private Chord(Builder builder) {
-        this(builder.notes, builder.inversion, builder.bass);
+        this(builder.notes, builder.inversion, builder.bass, builder.type);
     }
 
-    public Chord(ArrayList<ChordNote> noteList) {
-        this(noteList, 0);
+    private Chord(ArrayList<ChordNote> noteList, ChordType type) {
+        this(noteList, 0, type);
     }
 
-    private Chord(ArrayList<ChordNote> noteList, int inversion) {
-        this(noteList, inversion, null);
+    private Chord(ArrayList<ChordNote> noteList, int inversion, ChordType type) {
+        this(noteList, inversion, null, type);
     }
 
-    private Chord(ArrayList<ChordNote> noteList, int inversion, ChordNote bass) {
+    private Chord(ArrayList<ChordNote> noteList, int inversion, ChordNote bass, ChordType type) {
         if (inversion < 0 || inversion >= noteList.size())
             throw new IllegalArgumentException("Inversion is impossible.");
         for (Note note : noteList) {
-            if (note.isEnharmonicNoClass(bass)) {
+            if (note.equalsNoClass(bass)) {
                 throw new IllegalArgumentException("Please use inversion.");
             }
         }
         this.noteList = new ArrayList<>(noteList);
         this.inversion = inversion;
         this.bass = bass;
+        this.type = type;
     }
 
     public Chord(Chord chord) {
-        this(chord.noteList, chord.inversion, chord.bass);
+        this(chord.noteList, chord.inversion, chord.bass, chord.type);
     }
 
     public ArrayList<ChordNote> getChordNotes() {

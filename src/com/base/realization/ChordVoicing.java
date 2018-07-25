@@ -31,7 +31,7 @@ public class ChordVoicing {
         private void addVoice(VoiceNote note) {
             cluster.add(note);
             for (Note n : distinctNotes) {
-                if (!n.isEnharmonicNoClass(note))
+                if (!n.equalsNoClass(note))
                     distinctNotes.add(note);
             }
         }

@@ -5,7 +5,9 @@ import com.base.Note;
 import com.base.chord.Chord;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Concept of a mode of a scale.
@@ -16,40 +18,45 @@ import java.util.List;
 
 public class Mode
 {
-    private final Note tonic;
-    private final Note generator;
+    private final int index;
     private final Interval negativeGenInterval;
-    private final ArrayList<Note> tones = new ArrayList<>();
-    private final ArrayList<Note> negativeTones = new ArrayList<>();
+    private final List<Interval> intervalSteps;
+    private final boolean allowRespell;
+    private final List<Note> tones = new ArrayList<>();
+    private final List<Note> negativeTones = new ArrayList<>();
 
-    public Mode(Note tonic, int index, List<Interval> intervalSteps, boolean allowRespell, Interval negativeGenInterval)
+    public Mode(int index, List<Interval> intervalSteps, boolean allowRespell, Interval negativeGenInterval)
     {
-        this.tonic = tonic;
-        this.generator = tonic.interval(negativeGenInterval);
+        this.index = index;
+        this.intervalSteps = intervalSteps;
         this.negativeGenInterval = negativeGenInterval;
+        this.allowRespell = allowRespell;
+    }
 
-        Note tempnote = tonic;
-        tones.add(new Note(tonic));
+    public void build(Note tonic) {
+        Note tempnote = new Note(tonic);
+        if (allowRespell && tempnote.hasBetterSpell())
+            tempnote.respell();
+        tones.add(tempnote);
         for (int i = 0; i < intervalSteps.size() - 1; i++)
         {
             tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()));
+            if (allowRespell && tempnote.hasBetterSpell())
+                tempnote.respell();
             tones.add(tempnote);
         }
 
-        tempnote = generator;
-        negativeTones.add(new Note(generator));
+        tempnote = tonic.interval(negativeGenInterval);
+        if (allowRespell && tempnote.hasBetterSpell())
+            tempnote.respell();
+        negativeTones.add(tempnote);
         for (int i = 0; i < intervalSteps.size() - 1; i++)
         {
             tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()).reverse());
+            if (allowRespell && tempnote.hasBetterSpell())
+                tempnote.respell();
             negativeTones.add(tempnote);
         }
-    }
-
-    public Mode(Mode mode)
-    {
-        this.tonic = mode.tonic;
-        this.generator = mode.generator;
-        this.negativeGenInterval = mode.negativeGenInterval;
     }
 
     public Note getNote(int index) {
@@ -96,5 +103,15 @@ public class Mode
             builder.addNote(getNegativeNote(scaleIndex));
         builder.setRoot(getNegativeNote(index).interval(negativeGenInterval.reverse()));
         return builder.build();
+    }
+
+    public boolean containChord(Chord chord) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Scale: " + tones.stream().map(n -> n._toString(false)).collect(Collectors.joining(" ")) + "\n" +
+                "Negative: " +  negativeTones.stream().map(n -> n._toString(false)).collect(Collectors.joining(" "));
     }
 }
