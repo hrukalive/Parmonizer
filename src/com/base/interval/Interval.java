@@ -1,5 +1,6 @@
 package com.base.interval;
 
+import com.base.Note;
 import com.base.Tuple;
 
 import java.util.HashMap;
@@ -133,6 +134,15 @@ public final class Interval {
         if (_intv_degdist_map.containsKey(tuple))
             return _intv_degdist_map.get(tuple);
         throw new IllegalArgumentException("Cannot determine specific quality.");
+    }
+
+    public static Interval parse(Note a, Note b) {
+        if (a.compareTo(b) > 0)
+            return Interval.parse(b, a).invert();
+        int degDiff = b.getNoteCode() - a.getNoteCode();
+        if (degDiff < 0)
+            degDiff += 7;
+        return Interval.parse(degDiff + 1, a.dist(b) % 12);
     }
 
     public static final Interval P1 = Interval.parse("P1");

@@ -34,39 +34,39 @@ public class Mode
     }
 
     public void build(Note tonic) {
-        Note tempnote = new Note(tonic);
+        Note tempnote = Note.parse(tonic);
         if (allowRespell && tempnote.hasBetterSpell())
-            tempnote.respell();
+            tempnote = tempnote.respell();
         tones.add(tempnote);
         for (int i = 0; i < intervalSteps.size() - 1; i++)
         {
             tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()));
             if (allowRespell && tempnote.hasBetterSpell())
-                tempnote.respell();
+                tempnote = tempnote.respell();
             tones.add(tempnote);
         }
 
         tempnote = tonic.interval(negativeGenInterval);
         if (allowRespell && tempnote.hasBetterSpell())
-            tempnote.respell();
+            tempnote = tempnote.respell();
         negativeTones.add(tempnote);
         for (int i = 0; i < intervalSteps.size() - 1; i++)
         {
             tempnote = tempnote.interval(intervalSteps.get((i + index) % intervalSteps.size()).reverse());
             if (allowRespell && tempnote.hasBetterSpell())
-                tempnote.respell();
+                tempnote = tempnote.respell();
             negativeTones.add(tempnote);
         }
     }
 
     public Note getNote(int index) {
-        Note ret = new Note(tones.get(index % tones.size()));
+        Note ret = Note.parse(tones.get(index % tones.size()));
         ret.octave(Math.floorDiv(index, tones.size()));
         return ret;
     }
 
     public Note getNegativeNote(int index) {
-        Note ret = new Note(negativeTones.get(index % negativeTones.size()));
+        Note ret = Note.parse(negativeTones.get(index % negativeTones.size()));
         ret.octave(-Math.floorDiv(index, negativeTones.size()));
         return ret;
     }

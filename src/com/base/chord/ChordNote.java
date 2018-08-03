@@ -6,7 +6,8 @@ import com.base.Tuple;
 
 import java.util.ArrayList;
 
-public class ChordNote extends Note {
+public class ChordNote implements Comparable<ChordNote> {
+    private Note note = null;
     private boolean repeatable = true;
     private int repeatPenalty = 0;
     private boolean omittable = true;
@@ -17,19 +18,23 @@ public class ChordNote extends Note {
     private final ArrayList<Tuple<Interval, Integer>> bonusList = new ArrayList<>();
 
     public ChordNote(Note note) {
-        super(note);
+        this.note = note;
     }
 
-    public ChordNote(ChordNote config) {
-        super(config);
-        this.prepareList.addAll(config.prepareList);
-        this.tendencyList.addAll(config.tendencyList);
-        this.altTendencyList.addAll(config.altTendencyList);
-        this.bonusList.addAll(config.bonusList);
+    public ChordNote(ChordNote chordNote) {
+        this.note = chordNote.note;
+        this.repeatable = chordNote.repeatable;
+        this.repeatPenalty = chordNote.repeatPenalty;
+        this.omittable = chordNote.omittable;
+        this.omitPenalty = chordNote.omitPenalty;
+        this.prepareList.addAll(chordNote.prepareList);
+        this.tendencyList.addAll(chordNote.tendencyList);
+        this.altTendencyList.addAll(chordNote.altTendencyList);
+        this.bonusList.addAll(chordNote.bonusList);
     }
 
     public Note getNote() {
-        return this;
+        return note;
     }
 
     public boolean isRepeatable() {
@@ -100,4 +105,34 @@ public class ChordNote extends Note {
         return bonusList;
     }
 
+    public boolean equalsNoClass(ChordNote note) { return note != null && this.note.equalsNoClass(note.getNote()); }
+
+    public void octave(int delta) { note = note.octave(delta); }
+
+    public int getOctave() { return note.getOctave(); }
+
+    public ChordNote interval(Interval interval) {
+        ChordNote ret = new ChordNote(this);
+        ret.note = ret.note.interval(interval);
+        return ret;
+    }
+
+    @Override
+    public int compareTo(ChordNote o) {
+        if (o == null) throw new NullPointerException("Null NoteStruct to compare");
+        return this.note.compareTo(o.note);
+    }
+    @Override
+    public String toString() {
+        return note.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Note)
+            return ((Note)obj).equals(this.note);
+        else if (obj instanceof ChordNote)
+            return ((ChordNote)obj).getNote().equals(this.note);
+        return false;
+    }
 }

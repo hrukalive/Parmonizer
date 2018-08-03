@@ -38,7 +38,7 @@ public class Chord {
         public Builder setRoot(Note root) {
             ChordNote tmp = null;
             for (ChordNote note : notes) {
-                if (note.equalsNoClass(root)) {
+                if (note.getNote().equalsNoClass(root)) {
                     tmp = note;
                     break;
                 }
@@ -61,14 +61,14 @@ public class Chord {
         }
 
         public Builder setInversion(int inv) {
-            return setBass(notes.get(inv));
+            return setBass(notes.get(inv).getNote());
         }
 
         public Builder setBass(Note bass) {
             if (bass == null)
                 return this;
             for (int i = 0; i < notes.size(); i++) {
-                if (notes.get(i).equalsNoClass(bass)) {
+                if (notes.get(i).getNote().equalsNoClass(bass)) {
                     inversion = i;
                     this.bass = null;
                     return this;
@@ -208,11 +208,11 @@ public class Chord {
             if (tonic == null) {
                 throw new IllegalArgumentException("Tonic is not defined.");
             }
-            Note gen = tonic.interval(generatorInterval).interval(tonic.interval(root).reverse());
+            Note gen = tonic.interval(generatorInterval).interval(Interval.parse(tonic, root.getNote()).reverse());
             Builder builder = new Builder(gen);
             for (int i = 1; i < notes.size(); i++) {
                 ChordNote note = notes.get(i);
-                builder.stackFromGenerator(generator.interval(note).reverse());
+                builder.stackFromGenerator(Interval.parse(generator, note.getNote()).reverse());
                 if (note.isOmittable())
                     builder.omittable(note.getOmitPenalty());
                 else
@@ -236,16 +236,16 @@ public class Chord {
             }
             int deg = generatorInterval.degree();
             int semitone = generatorInterval.semitones();
-            if (builder.notes.contains(gen.interval(generatorInterval.reverse())))
+            if (builder.notes.stream().map(ChordNote::getNote).anyMatch(n -> n.equals(gen.interval(generatorInterval.reverse()))))
                 builder.setRoot(gen.interval(generatorInterval.reverse()));
-            else if (builder.notes.contains(gen.interval(Interval.parse(deg, semitone - 1).reverse())))
+            else if (builder.notes.stream().map(ChordNote::getNote).anyMatch(n -> n.equals(gen.interval(Interval.parse(deg, semitone - 1).reverse()))))
                 builder.setRoot(gen.interval(Interval.parse(deg, semitone - 1).reverse()));
-            else if (builder.notes.contains(gen.interval(Interval.parse(deg, semitone + 1).reverse())))
+            else if (builder.notes.stream().map(ChordNote::getNote).anyMatch(n -> n.equals(gen.interval(Interval.parse(deg, semitone + 1).reverse()))))
                 builder.setRoot(gen.interval(Interval.parse(deg, semitone + 1).reverse()));
             else
                 throw new InternalException("Cannot set root for negative harmony.");
             if (this.bass != null)
-                builder.setBass(gen.interval(this.root.interval(this.bass).reverse()));
+                builder.setBass(gen.interval(Interval.parse(this.root.getNote(), this.bass.getNote()).reverse()));
             else
                 builder.setInversion(this.inversion);
             return builder;
@@ -256,7 +256,7 @@ public class Chord {
             for (ChordNote note : notes) {
                 if (!note.equals(root)) {
                     while (note.compareTo(root) < 0)
-                        note.octaveUp();
+                        note.octave(1);
                 }
             }
             Collections.sort(notes);
@@ -346,7 +346,7 @@ public class Chord {
     private Chord(ArrayList<ChordNote> noteList, int inversion, ChordNote bass, ChordType type) {
         if (inversion < 0 || inversion >= noteList.size())
             throw new IllegalArgumentException("Inversion is impossible.");
-        for (Note note : noteList) {
+        for (ChordNote note : noteList) {
             if (note.equalsNoClass(bass)) {
                 throw new IllegalArgumentException("Please use inversion.");
             }
@@ -380,7 +380,7 @@ public class Chord {
     }
 
     public Note getRoot() {
-        return noteList.get(0);
+        return noteList.get(0).getNote();
     }
 
     public boolean isBassInChord() {

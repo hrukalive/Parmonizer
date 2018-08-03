@@ -5,27 +5,18 @@ import com.base.Note;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class VoiceNote extends Note
+public class VoiceNote implements Comparable<VoiceNote>
 {
+    private Note note;
     private boolean insisted;
     private final ArrayList<Note> tendency;
     private final ArrayList<Note> altTendency;
     private final HashMap<Note, Integer> bonusMap;
     private final ArrayList<Note> prepareReq;
 
-    public VoiceNote(int noteCode, int octave, int alteration)
-    {
-        super(noteCode, octave, alteration);
-        this.insisted = false;
-        this.tendency = new ArrayList<>();
-        this.altTendency = new ArrayList<>();
-        this.bonusMap = new HashMap<>();
-        this.prepareReq = new ArrayList<>();
-    }
-
     public VoiceNote(Note note)
     {
-        super(note);
+        this.note = note;
         this.insisted = false;
         this.tendency = new ArrayList<>();
         this.altTendency = new ArrayList<>();
@@ -35,7 +26,7 @@ public class VoiceNote extends Note
 
     public VoiceNote(VoiceNote note)
     {
-        super(note._noteCode, note._octave, note._alteration);
+        this.note = note.note;
         this.insisted = note.insisted;
         this.tendency = new ArrayList<>(note.tendency);
         this.altTendency = new ArrayList<>(note.altTendency);
@@ -46,15 +37,21 @@ public class VoiceNote extends Note
     public ArrayList<VoiceNote> allInRange(Note lo, Note hi)
     {
         ArrayList<VoiceNote> ret = new ArrayList<>();
-        int temp_octave = 0;
-        while (lo.getCode() > _getCode(_noteCode, temp_octave, _alteration)) temp_octave++;
-        while (hi.getCode() >= _getCode(_noteCode, temp_octave, _alteration))
+        Note tmp = Note.parse(note.getNoteCode(), note.getAlteration(), 0);
+        while (lo.compareTo(tmp) > 0) tmp = tmp.octaveUp();
+        while (hi.compareTo(tmp) >= 0)
         {
-            ret.add(new VoiceNote(_noteCode, temp_octave, _alteration));
-            temp_octave++;
+            ret.add(new VoiceNote(tmp));
+            tmp = tmp.octaveUp();
         }
         return ret;
     }
+
+    public Note getNote() {
+        return note;
+    }
+
+    public boolean equalsNoClass(VoiceNote note) { return note != null && this.note.equalsNoClass(note.getNote()); }
 
     public void setInsisted()
     {
@@ -78,4 +75,24 @@ public class VoiceNote extends Note
     public HashMap<Note, Integer> getBonus() { return bonusMap; }
 
     public ArrayList<Note> getPrepare() { return prepareReq; }
+
+    @Override
+    public int compareTo(VoiceNote o) {
+        if (o == null) throw new NullPointerException("Null NoteStruct to compare");
+        return this.note.compareTo(o.note);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Note)
+            return ((Note)obj).equals(this.note);
+        else if (obj instanceof VoiceNote)
+            return ((VoiceNote)obj).getNote().equals(this.note);
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return note.toString();
+    }
 }

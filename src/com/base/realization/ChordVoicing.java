@@ -30,7 +30,7 @@ public class ChordVoicing {
 
         private void addVoice(VoiceNote note) {
             cluster.add(note);
-            for (Note n : distinctNotes) {
+            for (VoiceNote n : distinctNotes) {
                 if (!n.equalsNoClass(note))
                     distinctNotes.add(note);
             }
@@ -43,7 +43,7 @@ public class ChordVoicing {
         }
 
         private Note highestNote() {
-            return cluster.size() == 0 ? null : cluster.get(cluster.size() - 1);
+            return cluster.size() == 0 ? null : cluster.get(cluster.size() - 1).getNote();
         }
 
         public ArrayList<VoiceNote> getNotes() {
@@ -106,7 +106,7 @@ public class ChordVoicing {
         if (chord.isBassInChord())
             this.voiceList.add(new VoiceConfig(Note.parse("E2"), Note.parse("E4"), chord.getBass(), null, 50));
         else
-            this.voiceList.add(new VoiceConfig(Note.parse("E2"), Note.parse("E4"), null, chord.getBass(), 50));
+            this.voiceList.add(new VoiceConfig(Note.parse("E2"), Note.parse("E4"), null, chord.getBass().getNote(), 50));
         this.voiceList.add(new VoiceConfig(Note.parse("B2"), Note.parse("A4"), null, null, 20));
         this.voiceList.add(new VoiceConfig(Note.parse("F3"), Note.parse("E5"), null, null, 30));
         this.voiceList.add(new VoiceConfig(Note.parse("C4"), Note.parse("C6"), null, null, 0));
@@ -160,17 +160,17 @@ public class ChordVoicing {
                 note.setInsisted();
                 yieldHelper(num + 1, accum.addVoiceNew(note), voices);
             } else if (voiceConfig.getFixClassNote() != null)
-                for (VoiceNote note : new VoiceNote(voiceConfig.getFixClassNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
+                for (VoiceNote note : new VoiceNote(voiceConfig.getFixClassNote().getNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh()))
                     yieldHelper(num + 1, accum.addVoiceNew(note), voices);
             else {
                 for (ChordNote noteConfig : noteList) {
-                    for (VoiceNote note : new VoiceNote(noteConfig).allInRange(voiceConfig.getLow(), voiceConfig.getHigh())) {
-                        noteConfig.getPrepareList().forEach(intv -> note.addPrepare(note.interval(intv)));
-                        noteConfig.getTendencyList().forEach(intv -> note.addTendency(note.interval(intv)));
-                        noteConfig.getAltTendencyList().forEach(intv -> note.addAltTendency(note.interval(intv)));
-                        noteConfig.getBonusList().forEach(tuple -> note.addBonus(note.interval(tuple.getFirst()), tuple.getSecond()));
+                    for (VoiceNote note : new VoiceNote(noteConfig.getNote()).allInRange(voiceConfig.getLow(), voiceConfig.getHigh())) {
+                        noteConfig.getPrepareList().forEach(intv -> note.addPrepare(note.getNote().interval(intv)));
+                        noteConfig.getTendencyList().forEach(intv -> note.addTendency(note.getNote().interval(intv)));
+                        noteConfig.getAltTendencyList().forEach(intv -> note.addAltTendency(note.getNote().interval(intv)));
+                        noteConfig.getBonusList().forEach(tuple -> note.addBonus(note.getNote().interval(tuple.getFirst()), tuple.getSecond()));
 
-                        if (accum.highestNote() == null || note.compareTo(accum.highestNote()) >= 0)
+                        if (accum.highestNote() == null || note.getNote().compareTo(accum.highestNote()) >= 0)
                             yieldHelper(num + 1, accum.addVoiceNew(note), voices);
                     }
                 }
@@ -188,6 +188,6 @@ public class ChordVoicing {
     }
 
     public Note getBass() {
-        return voiceList.get(0).getFixClassNote();
+        return voiceList.get(0).getFixClassNote().getNote();
     }
 }

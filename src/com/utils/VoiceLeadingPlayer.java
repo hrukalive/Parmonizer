@@ -1,6 +1,7 @@
 package com.utils;
 
 import com.base.Note;
+import com.base.progression.VoiceNote;
 import com.base.realization.ChordVoicing;
 import com.base.realization.VoiceLeading;
 
@@ -31,8 +32,8 @@ public final class VoiceLeadingPlayer {
         channel.programChange(48);
 
         for (ChordVoicing.NoteCluster nc : voiceLeading.getPiece()) {
-            for (Note n : nc.getNotes()) {
-                channel.noteOn(n.getCode(), 50);
+            for (VoiceNote n : nc.getNotes()) {
+                channel.noteOn(n.getNote().getCode(), 50);
             }
             try {
                 Thread.sleep(1000);

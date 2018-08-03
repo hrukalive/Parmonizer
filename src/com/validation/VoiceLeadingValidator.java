@@ -30,11 +30,11 @@ public class VoiceLeadingValidator {
                     return VoiceLeadingValidationResult.VOICE_OVERLAP;
 
                 // No leap for larger than P4
-                if (i > 0 && Math.abs(nc1n.get(i).dist(nc2n.get(i))) > Interval.parse("P4").semitones())
+                if (i > 0 && Math.abs(nc1n.get(i).getNote().dist(nc2n.get(i).getNote())) > Interval.P4.semitones())
                     return VoiceLeadingValidationResult.LARGE_LEAP;
 
                 // No Aug interval
-                if (nc1n.get(i).dist(nc2n.get(i)) > Interval.parse("M2").semitones() && nc1n.get(i).isAugmented(nc2n.get(i)))
+                if (nc1n.get(i).getNote().dist(nc2n.get(i).getNote()) > Interval.M2.semitones() && nc1n.get(i).getNote().isAugmented(nc2n.get(i).getNote()))
                     return VoiceLeadingValidationResult.AUG_INTERVAL;
 
                 // Tendency tone must be resolved in the outer voices
@@ -53,17 +53,17 @@ public class VoiceLeadingValidator {
         // No parallel perfect intervals
         for (int i = 0; i < nc1n.size() - 1 && !nc2n.get(i).isInsisted(); i++) {
             for (int j = i + 1; j < nc1n.size() && !nc2n.get(j).isInsisted(); j++) {
-                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.parse("P1")) &&
-                        nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P1")))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && Interval.parse(nc1n.get(i).getNote(), nc1n.get(j).getNote()).equals(Interval.P1) &&
+                        Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P1))
                     return VoiceLeadingValidationResult.PARALLEL_PERFECT_INTERVAL;
-                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.parse("P4")) &&
-                        nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P4")))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && Interval.parse(nc1n.get(i).getNote(), nc1n.get(j).getNote()).equals(Interval.P4) &&
+                        Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P4))
                     return VoiceLeadingValidationResult.PARALLEL_PERFECT_INTERVAL;
-                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.parse("P5")) &&
-                        nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P5")))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && Interval.parse(nc1n.get(i).getNote(), nc1n.get(j).getNote()).equals(Interval.P5) &&
+                        Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P5))
                     return VoiceLeadingValidationResult.PARALLEL_PERFECT_INTERVAL;
-                if (!nc1n.get(i).equals(nc2n.get(i)) && nc1n.get(i).interval(nc1n.get(j)).equals(Interval.parse("P8")) &&
-                        nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P8")))
+                if (!nc1n.get(i).equals(nc2n.get(i)) && Interval.parse(nc1n.get(i).getNote(), nc1n.get(j).getNote()).equals(Interval.P8) &&
+                        Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P8))
                     return VoiceLeadingValidationResult.PARALLEL_PERFECT_INTERVAL;
             }
         }
@@ -71,14 +71,14 @@ public class VoiceLeadingValidator {
         // No contrary perfect intervals between outer voices
         if (!nc2n.get(nc1n.size() - 1).isInsisted() &&
                 nc1n.get(0).compareTo(nc2n.get(0)) < 0 && nc1n.get(nc1n.size() - 1).compareTo(nc2n.get(nc1n.size() - 1)) > 0 &&
-                Math.abs(nc1n.get(nc1n.size() - 1).dist(nc2n.get(nc1n.size() - 1))) > Interval.parse("M2").semitones()) {
-            if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.parse("P1")))
+                Math.abs(nc1n.get(nc1n.size() - 1).getNote().dist(nc2n.get(nc1n.size() - 1).getNote())) > Interval.M2.semitones()) {
+            if (Interval.parse(nc2n.get(0).getNote(), nc2n.get(nc1n.size() - 1).getNote()).equals(Interval.P1))
                 return VoiceLeadingValidationResult.CONTRARY_PERFECTION_INTERVAL;
-            if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.parse("P4")))
+            if (Interval.parse(nc2n.get(0).getNote(), nc2n.get(nc1n.size() - 1).getNote()).equals(Interval.P4))
                 return VoiceLeadingValidationResult.CONTRARY_PERFECTION_INTERVAL;
-            if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.parse("P5")))
+            if (Interval.parse(nc2n.get(0).getNote(), nc2n.get(nc1n.size() - 1).getNote()).equals(Interval.P5))
                 return VoiceLeadingValidationResult.CONTRARY_PERFECTION_INTERVAL;
-            if (nc2n.get(0).interval(nc2n.get(nc1n.size() - 1)).equals(Interval.parse("P8")))
+            if (Interval.parse(nc2n.get(0).getNote(), nc2n.get(nc1n.size() - 1).getNote()).equals(Interval.P8))
                 return VoiceLeadingValidationResult.CONTRARY_PERFECTION_INTERVAL;
         }
 

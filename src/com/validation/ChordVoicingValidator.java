@@ -33,7 +33,7 @@ public final class ChordVoicingValidator {
             return false;
 
         for (int i = 1; i < chordRealization.size() - 1; i++) {
-            if (chordRealization.get(i + 1).getCode() - chordRealization.get(i).getCode() > 12)
+            if (chordRealization.get(i + 1).getNote().getCode() - chordRealization.get(i).getNote().getCode() > 12)
                 return false;
         }
 
@@ -42,8 +42,8 @@ public final class ChordVoicingValidator {
             if (!omissibility.get(i)) {
                 boolean existFlag = false;
                 Note notOmitNote = chordTones.get(i);
-                for (Note note : chordRealization) {
-                    if (note.equalsNoClass(notOmitNote)) {
+                for (VoiceNote note : chordRealization) {
+                    if (note.getNote().equalsNoClass(notOmitNote)) {
                         existFlag = true;
                         break;
                     }
@@ -54,9 +54,9 @@ public final class ChordVoicingValidator {
         }
 
         int[] counter = new int[chordTones.size()];
-        for (Note note : chordRealization) {
+        for (VoiceNote note : chordRealization) {
             for (int i = 0; i < chordTones.size(); i++) {
-                if (note.equalsNoClass(chordTones.get(i))) {
+                if (note.getNote().equalsNoClass(chordTones.get(i))) {
                     counter[i]++;
                     break;
                 }

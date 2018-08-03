@@ -22,24 +22,24 @@ public class VoiceLeadingScorer
         ArrayList<VoiceNote> nc2n = nc2.getNotes();
         int accum = 0;
         
-        accum += 1000 * Math.abs(nc1n.get(0).dist(nc2n.get(0)));
+        accum += 1000 * Math.abs(nc1n.get(0).getNote().dist(nc2n.get(0).getNote()));
         for (int i = 1; i < nc1n.size(); i++)
-            accum += 50 * Math.abs(nc1n.get(i).dist(nc2n.get(i)));
+            accum += 50 * Math.abs(nc1n.get(i).getNote().dist(nc2n.get(i).getNote()));
 
         for (int i = 0; i < nc1n.size() - 1; i++)
         {
             for (int j = i + 1; j < nc1n.size(); j++)
             {
-                if (nc1n.get(i).compareTo(nc2n.get(i)) < 0 && nc1n.get(j).compareTo(nc2n.get(j)) > 0 && 
-                        Math.abs(nc1n.get(j).dist(nc2n.get(j))) > Interval.parse("M2").semitones())
+                if (nc1n.get(i).compareTo(nc2n.get(i)) < 0 && nc1n.get(j).compareTo(nc2n.get(j)) > 0 &&
+                        Math.abs(nc1n.get(j).getNote().dist(nc2n.get(j).getNote())) > Interval.parse("M2").semitones())
                 {
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P1")))
+                    if (Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P1))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P4")))
+                    if (Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P4))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P5")))
+                    if (Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P5))
                         accum += 2000;
-                    if (nc2n.get(i).interval(nc2n.get(j)).equals(Interval.parse("P8")))
+                    if (Interval.parse(nc2n.get(i).getNote(), nc2n.get(j).getNote()).equals(Interval.P8))
                         accum += 2000;
                 }
             }

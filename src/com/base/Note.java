@@ -1,7 +1,11 @@
 package com.base;
 
 import com.base.interval.Interval;
+import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,34 +17,24 @@ import java.util.regex.Pattern;
  * Created by NyLP on 6/12/17.
  */
 
-public class Note implements Comparable<Note> {
-    protected int _noteCode;
-    protected int _octave;
-    protected int _alteration;
-
-    public Note(int noteCode, int octave, int alteration) {
-        if (noteCode < 0 || noteCode > 6 || alteration < -2 || alteration > 2)
-            throw new IllegalArgumentException("Specified parameters is wrong.");
-        this._noteCode = noteCode;
-        this._octave = octave;
-        this._alteration = alteration;
-    }
-
-    public Note(Note note) {
-        this._noteCode = note._noteCode;
-        this._octave = note._octave;
-        this._alteration = note._alteration;
-    }
+public final class Note implements Comparable<Note> {
+    private final static Map<Triple<Integer, Integer, Integer>, Note> note_code_map = new HashMap<>();
+    private final static Map<String, Note> note_name_map = new HashMap<>();
 
     public static Note parse(String noteName) {
         int code = -1;
         int alt = 0;
-        Matcher note_matcher = Pattern.compile("[A-G](#|(bb)|x|b)?").matcher(noteName);
+        Matcher note_matcher = Pattern.compile("[A-G](bb|b|#|x)?").matcher(noteName);
         Matcher oct_matcher = Pattern.compile("-?[0-9]+").matcher(noteName);
         if (!note_matcher.find())
-            throw new IllegalArgumentException("Unable to build the note name");
+            throw new IllegalArgumentException("Unable to build on the note name");
         String name = noteName.substring(note_matcher.start(), note_matcher.end());
         int oct = oct_matcher.find() ? Integer.parseInt(noteName.substring(oct_matcher.start(), oct_matcher.end())) : 0;
+
+        if (note_name_map.containsKey(noteName))
+            return note_name_map.get(noteName);
+        else if (!oct_matcher.matches() && note_name_map.containsKey(noteName + oct))
+            return note_name_map.get(noteName + oct);
 
         switch (name.substring(0, 1)) {
             case "C":
@@ -65,41 +59,67 @@ public class Note implements Comparable<Note> {
                 code = 6;
                 break;
         }
-        switch (name.substring(1)) {
-            case "bb":
-                alt = -2;
-                break;
-            case "b":
-                alt = -1;
-                break;
-            case "#":
-                alt = 1;
-                break;
-            case "x":
-                alt = 2;
-                break;
-            default:
-                alt = 0;
-                break;
+        if (name.substring(1).startsWith("b")) {
+            alt = -name.substring(1).length();
+        } else if (name.substring(1).startsWith("#")) {
+            alt = name.substring(1).length();
+        } else if (name.substring(1).equals("x")) {
+            alt = 2;
+        } else {
+            alt = 0;
         }
 
-        return new Note(code, oct, alt);
+        Note tmp = new Note(code, oct, alt);
+        if (!note_code_map.containsKey(new Triple<>(code, oct, alt))) {
+            note_code_map.put(new Triple<>(code, oct, alt), tmp);
+            note_name_map.put(tmp.toString(), tmp);
+        } else {
+            throw new InternalException("State of maps is invalid.");
+        }
+        return tmp;
+    }
+
+    public static Note parse(Note note) {
+        return parse(note.getNoteCode(), note.getAlteration(), note.getOctave());
+    }
+
+    public static Note parse(int code, int alteration, int octave) {
+        if (!note_code_map.containsKey(new Triple<>(code, octave, alteration))) {
+            Note tmp = new Note(code, octave, alteration);
+            note_code_map.put(new Triple<>(code, octave, alteration), tmp);
+            note_name_map.put(tmp.toString(), tmp);
+            return tmp;
+        } else {
+            return note_code_map.get(new Triple<>(code, octave, alteration));
+        }
+    }
+
+    protected final int _noteCode;
+    protected final int _octave;
+    protected final int _alteration;
+
+    private Note(int noteCode, int octave, int alteration) {
+        if (noteCode < 0 || noteCode > 6)
+            throw new IllegalArgumentException("Specified parameters is wrong.");
+        this._noteCode = noteCode;
+        this._octave = octave;
+        this._alteration = alteration;
+    }
+
+    public int getNoteCode() {
+        return _noteCode;
+    }
+
+    public int getOctave() {
+        return _octave;
+    }
+
+    public int getAlteration() {
+        return _alteration;
     }
 
     public int dist(Note note) {
         return note.getCode() - this.getCode();
-    }
-
-    // TODO: Ab->A# is possible but not parsed correctly.
-    public Interval interval(Note note) {
-        if (compareTo(note) > 0)
-            return note.interval(this).invert();
-        int that_octave = note._octave;
-        while (_dist(_noteCode, 0, _alteration, note._noteCode, that_octave, note._alteration) > 12)
-            that_octave--;
-        int diff = note._noteCode - this._noteCode;
-        return Interval.parse((diff <= 0 ? (diff + that_octave * 7) : diff) + 1,
-                _dist(_noteCode, 0, _alteration, note._noteCode, that_octave, note._alteration));
     }
 
     public Note interval(Interval intv) {
@@ -124,41 +144,37 @@ public class Note implements Comparable<Note> {
     public boolean isAugmented(Note note) {
         if (compareTo(note) > 0)
             return note.isAugmented(this);
-        return interval(note).isAugmented();
+        return Interval.parse(this, note).isAugmented();
     }
 
     public boolean isMajor(Note note) {
         if (compareTo(note) > 0)
             return note.isMajor(this);
-        return interval(note).isMajor();
+        return Interval.parse(this, note).isMajor();
     }
 
     public boolean isDiminished(Note note) {
         if (compareTo(note) > 0)
             return note.isDiminished(this);
-        return interval(note).isDiminished();
+        return Interval.parse(this, note).isDiminished();
     }
 
     public boolean isMinor(Note note) {
         if (compareTo(note) > 0)
             return note.isMinor(this);
-        return interval(note).isMinor();
+        return Interval.parse(this, note).isMinor();
     }
 
-    public void octaveUp() {
-        _octave++;
+    public Note octaveUp() {
+        return octave(1);
     }
 
-    public void octaveDown() {
-        _octave--;
+    public Note octaveDown() {
+        return octave(-1);
     }
 
-    public void octave(int delta) {
-        _octave += delta;
-    }
-
-    public int getOctave() {
-        return _octave;
+    public Note octave(int delta) {
+        return parse(_noteCode, _alteration, _octave + delta);
     }
 
     private Note _intervalAbove(Interval intv) {
@@ -166,33 +182,40 @@ public class Note implements Comparable<Note> {
         int temp_octave = _octave + temp_noteCode / 7;
         temp_noteCode %= 7;
         int temp_alteration = intv.semitones() - (_getCode(temp_noteCode, temp_octave, 0) - this.getCode());
-        return new Note(temp_noteCode, temp_octave, temp_alteration);
+        return parse(temp_noteCode, temp_alteration, temp_octave);
     }
 
     public boolean hasBetterSpell() {
-        return Math.abs(_alteration) == 2 ||
+        return Math.abs(_alteration) >= 2 ||
                 ((_noteCode == 2 || _noteCode == 6) && _alteration > 0) ||
                 ((_noteCode == 3 || _noteCode == 0) && _alteration < 0);
     }
     
-    public void respell() {
-        if ((_noteCode == 2 || _noteCode == 6) && _alteration > 0) {
-            _noteCode++;
-            _octave += _noteCode / 7;
-            _noteCode %= 7;
-            _alteration = _alteration - 1;
-        } else if ((_noteCode == 3 || _noteCode == 0) && _alteration < 0) {
-            _noteCode--;
-            _octave += Math.floorDiv(_noteCode, 7);
-            _noteCode = (_noteCode + 7) % 7;
-            _alteration = _alteration + 1;
-        } else if (_alteration > 0) {
-            _noteCode++;
-            _alteration -= 2;
-        } else if (_alteration < 0) {
-            _noteCode--;
-            _alteration += 2;
-        }
+    public Note respell() {
+        int tmp_noteCode = _noteCode;
+        int tmp_octave = _octave;
+        int tmp_alteration = _alteration;
+        do {
+            if ((tmp_noteCode == 2 || tmp_noteCode == 6) && tmp_alteration > 0) {
+                tmp_noteCode++;
+                tmp_octave += tmp_noteCode / 7;
+                tmp_noteCode %= 7;
+                tmp_alteration = tmp_alteration - 1;
+            } else if ((tmp_noteCode == 3 || tmp_noteCode == 0) && tmp_alteration < 0) {
+                tmp_noteCode--;
+                tmp_octave += Math.floorDiv(tmp_noteCode, 7);
+                tmp_noteCode = (tmp_noteCode + 7) % 7;
+                tmp_alteration = tmp_alteration + 1;
+            } else if (tmp_alteration > 0) {
+                tmp_noteCode++;
+                tmp_alteration -= 2;
+            } else if (tmp_alteration < 0) {
+                tmp_noteCode--;
+                tmp_alteration += 2;
+            }
+        } while (Math.abs(tmp_alteration) >= 2);
+
+        return parse(tmp_noteCode, tmp_alteration, tmp_octave);
     }
 
     private Note _intervalBelow(Interval intv) {
@@ -201,11 +224,11 @@ public class Note implements Comparable<Note> {
         int temp_octave = _octave + temp_noteCode / 7;
         temp_noteCode %= 7;
         int temp_alteration = intv_inv.semitones() - (_getCode(temp_noteCode, temp_octave, 0) - this.getCode());
-        return new Note(temp_noteCode, temp_octave - 1, temp_alteration);
+        return parse(temp_noteCode, temp_alteration, temp_octave - 1);
     }
 
-    private static int _dist(int this_noteCode, int this_octave, int this_alteration,
-                             int that_noteCode, int that_octave, int that_alteration) {
+    public static int dist(int this_noteCode, int this_octave, int this_alteration,
+                           int that_noteCode, int that_octave, int that_alteration) {
         return _getCode(that_noteCode, that_octave, that_alteration) - _getCode(this_noteCode, this_octave, this_alteration);
     }
 
@@ -266,19 +289,12 @@ public class Note implements Comparable<Note> {
             default:
                 throw new InternalError("Invalid note");
         }
-        switch (_alteration) {
-            case -2:
-                ret += "bb";
-                break;
-            case -1:
-                ret += "b";
-                break;
-            case 1:
-                ret += "#";
-                break;
-            case 2:
-                ret += "x";
-                break;
+        if (_alteration == 2) {
+            ret += "x";
+        } else if (_alteration < 0) {
+            ret += String.join("", Collections.nCopies(-_alteration, "b"));
+        } else if (_alteration > 0) {
+            ret += String.join("", Collections.nCopies(_alteration, "#"));
         }
         return ret + (includeOct ? _octave : "");
     }
@@ -308,9 +324,7 @@ public class Note implements Comparable<Note> {
     @Override
     public int compareTo(Note o) {
         if (o == null) throw new NullPointerException("Null NoteStruct to compare");
-        if (getCode() < o.getCode()) return -1;
-        if (getCode() > o.getCode()) return 1;
-        return 0;
+        return Integer.compare(getCode(), o.getCode());
     }
 }
 
