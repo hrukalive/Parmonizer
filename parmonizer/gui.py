@@ -1,13 +1,14 @@
 """Tkinter based interface for the Parmonizer harmony solver."""
 from __future__ import annotations
 
+import math
 import tkinter as tk
 from tkinter import messagebox, ttk
 import re
 from typing import List, Sequence
 
 from .music import build_default_voice_ranges, parse_chord_symbol
-from .playback import play_progression
+from .playback import SynthSettings, play_progression
 from .solver import HarmonyPreferences, HarmonySolution, HarmonySolver
 
 
@@ -33,10 +34,18 @@ class HarmonyApp(tk.Tk):
         self.hold_time_entries: List[tk.Entry] = []
         self.solution_choice_var = tk.StringVar(value="")
         self.solution_count_var = tk.StringVar(value="3")
+        default_synth = SynthSettings()
+        self.waveform_var = tk.StringVar(value=default_synth.waveform)
+        self.cutoff_var = tk.StringVar(value=str(default_synth.cutoff_hz))
+        self.resonance_var = tk.StringVar(value=str(default_synth.resonance))
+        self.attack_var = tk.StringVar(value=str(default_synth.attack))
+        self.decay_var = tk.StringVar(value=str(default_synth.decay))
+        self.sustain_var = tk.StringVar(value=str(default_synth.sustain_level))
+        self.release_var = tk.StringVar(value=str(default_synth.release))
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
 
         instruction = tk.Label(self, text=_INPUT_INSTRUCTIONS, justify=tk.LEFT, anchor="w")
         instruction.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
@@ -48,8 +57,55 @@ class HarmonyApp(tk.Tk):
         self.hold_time_frame.grid(row=2, column=0, sticky="ew", padx=10)
         self.hold_time_frame.columnconfigure(1, weight=1)
 
+        self.synth_frame = tk.LabelFrame(self, text="Playback settings")
+        self.synth_frame.grid(row=3, column=0, sticky="ew", padx=10, pady=(5, 0))
+        for column in range(8):
+            self.synth_frame.columnconfigure(column, weight=0)
+        self.synth_frame.columnconfigure(7, weight=1)
+
+        waveform_label = tk.Label(self.synth_frame, text="Source:")
+        waveform_label.grid(row=0, column=0, sticky="w", padx=(8, 4), pady=4)
+        waveform_dropdown = ttk.Combobox(
+            self.synth_frame,
+            textvariable=self.waveform_var,
+            state="readonly",
+            values=("sine", "triangle", "saw", "rectangle"),
+            width=10,
+        )
+        waveform_dropdown.grid(row=0, column=1, sticky="w", pady=4)
+
+        cutoff_label = tk.Label(self.synth_frame, text="Cutoff (Hz):")
+        cutoff_label.grid(row=0, column=2, sticky="w", padx=(12, 4), pady=4)
+        self.cutoff_entry = tk.Entry(self.synth_frame, width=8, textvariable=self.cutoff_var)
+        self.cutoff_entry.grid(row=0, column=3, sticky="w", pady=4)
+
+        resonance_label = tk.Label(self.synth_frame, text="Q:")
+        resonance_label.grid(row=0, column=4, sticky="w", padx=(12, 4), pady=4)
+        self.resonance_entry = tk.Entry(self.synth_frame, width=6, textvariable=self.resonance_var)
+        self.resonance_entry.grid(row=0, column=5, sticky="w", pady=4)
+
+        attack_label = tk.Label(self.synth_frame, text="Attack (s):")
+        attack_label.grid(row=1, column=0, sticky="w", padx=(8, 4), pady=(0, 6))
+        self.attack_entry = tk.Entry(self.synth_frame, width=8, textvariable=self.attack_var)
+        self.attack_entry.grid(row=1, column=1, sticky="w", pady=(0, 6))
+
+        decay_label = tk.Label(self.synth_frame, text="Decay (s):")
+        decay_label.grid(row=1, column=2, sticky="w", padx=(12, 4), pady=(0, 6))
+        self.decay_entry = tk.Entry(self.synth_frame, width=8, textvariable=self.decay_var)
+        self.decay_entry.grid(row=1, column=3, sticky="w", pady=(0, 6))
+
+        sustain_label = tk.Label(self.synth_frame, text="Sustain (0-1):")
+        sustain_label.grid(row=1, column=4, sticky="w", padx=(12, 4), pady=(0, 6))
+        self.sustain_entry = tk.Entry(self.synth_frame, width=6, textvariable=self.sustain_var)
+        self.sustain_entry.grid(row=1, column=5, sticky="w", pady=(0, 6))
+
+        release_label = tk.Label(self.synth_frame, text="Release (s):")
+        release_label.grid(row=1, column=6, sticky="w", padx=(12, 4), pady=(0, 6))
+        self.release_entry = tk.Entry(self.synth_frame, width=8, textvariable=self.release_var)
+        self.release_entry.grid(row=1, column=7, sticky="w", pady=(0, 6))
+
         controls = tk.Frame(self)
-        controls.grid(row=3, column=0, sticky="ew", padx=10, pady=(5, 0))
+        controls.grid(row=4, column=0, sticky="ew", padx=10, pady=(5, 0))
         controls.columnconfigure(0, weight=0)
         controls.columnconfigure(1, weight=1)
         controls.columnconfigure(2, weight=0)
@@ -88,7 +144,7 @@ class HarmonyApp(tk.Tk):
         self.play_button.grid(row=0, column=3, sticky="ew")
 
         self.output_text = tk.Text(self, state=tk.DISABLED, height=12, wrap=tk.WORD)
-        self.output_text.grid(row=4, column=0, sticky="nsew", padx=10, pady=(10, 10))
+        self.output_text.grid(row=5, column=0, sticky="nsew", padx=10, pady=(10, 10))
 
         self.update_hold_time_fields([])
 
@@ -162,12 +218,13 @@ class HarmonyApp(tk.Tk):
 
         try:
             hold_times = self.collect_hold_times(len(solution.voicings))
+            synth_settings = self.collect_synth_settings()
         except ValueError as exc:
             messagebox.showerror("Parmonizer", str(exc))
             return
 
         try:
-            play_progression(solution, hold_times)
+            play_progression(solution, hold_times, settings=synth_settings)
         except RuntimeError as exc:
             messagebox.showerror("Parmonizer", str(exc))
         except Exception as exc:  # noqa: BLE001 - surface error to user
@@ -196,6 +253,9 @@ class HarmonyApp(tk.Tk):
         return durations
 
     def update_hold_time_fields(self, chord_symbols: Sequence[str]) -> None:
+        if chord_symbols == self.current_chords and self.hold_time_entries:
+            return
+
         for widget in self.hold_time_frame.winfo_children():
             widget.destroy()
 
@@ -219,6 +279,85 @@ class HarmonyApp(tk.Tk):
             entry.insert(0, "1.5")
             entry.grid(row=index, column=1, sticky="ew", padx=(0, 8), pady=3)
             self.hold_time_entries.append(entry)
+
+    def collect_synth_settings(self) -> SynthSettings:
+        defaults = SynthSettings()
+
+        waveform = self.waveform_var.get().strip().lower() or defaults.waveform
+        if waveform not in {"sine", "triangle", "saw", "rectangle"}:
+            waveform = defaults.waveform
+            self.waveform_var.set(waveform)
+
+        cutoff_text = self.cutoff_var.get().strip()
+        if not cutoff_text:
+            cutoff = defaults.cutoff_hz
+            self.cutoff_var.set(self._format_number(cutoff))
+        else:
+            try:
+                cutoff = float(cutoff_text)
+            except ValueError as exc:
+                raise ValueError("Cutoff frequency must be a number.") from exc
+            if not math.isfinite(cutoff) or cutoff <= 0:
+                raise ValueError("Cutoff frequency must be greater than zero.")
+
+        resonance_text = self.resonance_var.get().strip()
+        if not resonance_text:
+            resonance = defaults.resonance
+            self.resonance_var.set(self._format_number(resonance))
+        else:
+            try:
+                resonance = float(resonance_text)
+            except ValueError as exc:
+                raise ValueError("Filter Q must be a number.") from exc
+            if not math.isfinite(resonance) or resonance <= 0:
+                raise ValueError("Filter Q must be greater than zero.")
+
+        attack = self._parse_time_value(self.attack_var, "Attack", defaults.attack)
+        decay = self._parse_time_value(self.decay_var, "Decay", defaults.decay)
+        release = self._parse_time_value(self.release_var, "Release", defaults.release)
+
+        sustain_text = self.sustain_var.get().strip()
+        if not sustain_text:
+            sustain = defaults.sustain_level
+            self.sustain_var.set(self._format_number(sustain))
+        else:
+            try:
+                sustain = float(sustain_text)
+            except ValueError as exc:
+                raise ValueError("Sustain level must be a number between 0 and 1.") from exc
+            if not math.isfinite(sustain) or not 0.0 <= sustain <= 1.0:
+                raise ValueError("Sustain level must be between 0 and 1.")
+
+        return SynthSettings(
+            waveform=waveform,
+            cutoff_hz=cutoff,
+            resonance=resonance,
+            attack=attack,
+            decay=decay,
+            sustain_level=sustain,
+            release=release,
+        )
+
+    def _parse_time_value(self, variable: tk.StringVar, label: str, default: float) -> float:
+        text = variable.get().strip()
+        if not text:
+            variable.set(self._format_number(default))
+            return default
+        try:
+            value = float(text)
+        except ValueError as exc:
+            raise ValueError(f"{label} time must be a number.") from exc
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{label} time must be zero or greater.")
+        return value
+
+    @staticmethod
+    def _format_number(value: float) -> str:
+        if abs(value) < 1e-9:
+            return "0"
+        if abs(value) >= 1:
+            return f"{value:.3f}".rstrip("0").rstrip(".")
+        return f"{value:.4f}".rstrip("0").rstrip(".")
 
 
 def parse_user_input(raw_text: str) -> tuple[int, List[str]]:

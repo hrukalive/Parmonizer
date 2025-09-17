@@ -16,7 +16,9 @@ The window contains an input text box for chord symbols and a button that produc
 panel. Enter chords separated by spaces or newlines (e.g. `Cmaj7 Fmaj7 G7 Cmaj9`). You can optionally set the number of
 parts with a directive like `voices=5`. After parsing the chord list the GUI exposes a hold-time entry for each chord, a
 **Solutions** control that determines how many harmonisations to generate, and a dropdown with a **Play** button so you
-can audition any of the returned voicings using those durations.
+can audition any of the returned voicings using those durations. Playback now includes a simple synthesiser with selectable
+waveforms (sine, triangle, saw, rectangle), a low-pass filter (cutoff/Q), and ADSR controls so you can tailor the envelope
+without leaving the app. Leaving a playback field blank restores its default value.
 
 Audio playback relies on the optional [`simpleaudio`](https://simpleaudio.readthedocs.io/) package:
 
