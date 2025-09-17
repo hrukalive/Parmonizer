@@ -14,8 +14,9 @@ python -m parmonizer.main
 
 The window contains an input text box for chord symbols and a button that produces the best harmonies in the output
 panel. Enter chords separated by spaces or newlines (e.g. `Cmaj7 Fmaj7 G7 Cmaj9`). You can optionally set the number of
-parts with a directive like `voices=5`. After parsing the chord list the GUI exposes a hold-time entry for each chord and
-a **Play Solution** button that auditions the highest ranked solution using those durations.
+parts with a directive like `voices=5`. After parsing the chord list the GUI exposes a hold-time entry for each chord, a
+**Solutions** control that determines how many harmonisations to generate, and a dropdown with a **Play** button so you
+can audition any of the returned voicings using those durations.
 
 Audio playback relies on the optional [`simpleaudio`](https://simpleaudio.readthedocs.io/) package:
 

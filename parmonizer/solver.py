@@ -231,6 +231,8 @@ class HarmonySolver:
                 base -= 12
             while base < voice.low.midi:
                 base += 12
+            while base - 12 >= voice.low.midi:
+                base -= 12
             pitch = base
             while voice.low.midi <= pitch <= voice.high.midi:
                 if require_pitch_class is None or pitch % 12 == require_pitch_class:
